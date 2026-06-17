@@ -18,12 +18,16 @@ export async function postData<T = unknown, R = unknown>(
     config?: AxiosRequestConfig
 ): Promise<AxiosResponse<R>> {
     try {
+        // 1. Detect if the payload is a FormData object
+        const isFormData = data instanceof FormData;
+
         const res = await axios.post<R>(`${BASE_URL}${endpoint}`, data, {
             ...config,
             headers: {
                 'Authorization': `Bearer ${TOKEN}`,
-                'Content-Type': 'application/json', // Standard fallback
-                ...config?.headers // Prioritizes manual multipart configurations
+                // 2. Only apply application/json if it's NOT a file upload
+                ...(!isFormData && { 'Content-Type': 'application/json' }),
+                ...config?.headers 
             }
         });
         return res;
