@@ -3,6 +3,7 @@ import { Routes } from "react-router-dom";
 import { getData } from "./services/appApi";
 import EmployeeForm from "./features/employees/EmployeeForm";
 import { useState } from "react";
+import Header from "./components/Header";
 
 const App = () => {
   const {
@@ -23,8 +24,7 @@ const App = () => {
 
   return (
     <>
-    <h2 onClick={() => setCoworkerWindow(true)}>aa</h2>
-    <h3>sadasd</h3>
+    <Header setCoworkerWindow={setCoworkerWindow} />
     {coworkerWindow && <EmployeeForm setCoworkerWindow={setCoworkerWindow} />} 
       <Routes></Routes>
      
