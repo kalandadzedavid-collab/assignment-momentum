@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import { getData } from "./services/appApi";
 import EmployeeForm from "./features/employees/EmployeeForm";
 import { useState } from "react";
 import Header from "./components/Header";
+import Home from "./pages/Home";
+import CreateTask from "./pages/CreateTask";
 
 const App = () => {
   const {
@@ -26,7 +28,10 @@ const App = () => {
     <>
     <Header setCoworkerWindow={setCoworkerWindow} />
     {coworkerWindow && <EmployeeForm setCoworkerWindow={setCoworkerWindow} />} 
-      <Routes></Routes>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/create+task" element={<CreateTask />} />
+      </Routes>
      
     </>
   );

@@ -20,7 +20,7 @@ font-normal rounded-xl px-5 py-2.5 outline outline-[#8338EC]"
         >
           თანამშრომლის შექმნა
         </button>
-        <button
+        <button onClick={() => navigate("/create+task")}
           className="cursor-pointer text-base
 font-normal text-white rounded-xl px-5 py-2.5 bg-[#8338EC]"
         >
