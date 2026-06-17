@@ -172,7 +172,7 @@ font-normal"
                 <select
                   onChange={(e) => setSelectedDepart(+e.target.value)}
                   className="w-full outline-0"
-                  id="department"
+                  id="departments"
                 >
                   {departments &&
                     departments.map((depart: departments) => {
