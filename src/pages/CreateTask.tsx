@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getData, postData } from "../services/appApi";
-import type { postTask, priorities, submitTask } from "../types/types";
+import type { priorities, submitTask } from "../types/types";
 import { useMemo, useState } from "react";
 import type { departments, employees, statuses } from "../types/types";
 import { useForm, type SubmitHandler } from "react-hook-form";
@@ -27,61 +27,96 @@ const CreateTask = () => {
     queryFn: () => getData("employees"),
   });
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setError,
   } = useForm<submitTask>();
 
   const addTask = useMutation({
-    mutationFn: (data: postTask) => postData("tasks", data),
+    // Accept a generic payload here (we send an array of task objects)
+    mutationFn: (data: unknown) => postData("tasks", data),
   });
 
   const onSubmit: SubmitHandler<submitTask> = (data) => {
     console.log(data);
 
-    const priority = priorities.filter((prior: priorities) => {
-      return prior.id == +data.priority;
-    });
+    // Convert string ids from form to numbers
+    const selectedPriorityId = Number(data.priority);
+    const selectedStatusId = Number(data.status);
+    const selectedDepartmentId = Number(data.department);
+    const selectedEmployeeId = Number(data.employee);
 
-    const status = statuses.filter((stat: statuses) => {
-      return stat.id == +data.status;
-    });
+    // Use find to get single objects (safer and clearer)
+    const priorityObj = priorities?.find(
+      (p: priorities) => p.id === selectedPriorityId
+    );
+    const statusObj = statuses?.find(
+      (s: statuses) => s.id === selectedStatusId
+    );
+    const departmentObj = departments?.find(
+      (d: departments) => d.id === selectedDepartmentId
+    );
+    const employeeObj = employees?.find(
+      (e: employees) => e.id === selectedEmployeeId
+    );
 
-    const department = departments.filter((dep: departments) => {
-      return dep.id == +data.department;
-    });
+    // Validate presence of referenced objects before sending
+    let hasError = false;
+    if (!priorityObj) {
+      setError("priority", { type: "manual", message: "აირჩიე პრიორიტეტი" });
+      hasError = true;
+    }
+    if (!statusObj) {
+      setError("status", { type: "manual", message: "აირჩიე სტატუსი" });
+      hasError = true;
+    }
+    if (!departmentObj) {
+      setError("department", {
+        type: "manual",
+        message: "აირჩიე დეპარტამენტი",
+      });
+      hasError = true;
+    }
+    if (!employeeObj) {
+      setError("employee", { type: "manual", message: "აირჩიე თანამშრომელი" });
+      hasError = true;
+    }
 
-    const employee = employees.filter((emp: employees) => {
-      return emp.id == +data.employee;
-    });
+    if (hasError) return; // stop submission if any referenced object is missing
 
-    const finalData: postTask = [
-      {
-        id: //automatic id here? how?,
-        ,
-        name: data.name,
-        description: data.description,
-        due_date: data.due_date,
-        status: status[0],
-        priority: priority[0],
-        department: department[0],
-        employee: employee[0],
-      },
-    ];
+    // Build payload for creation: send primitive ids (backend commonly expects *_id fields)
+    const payload = {
+      name: data.name,
+      description: data.description,
+      due_date: data.due_date,
+      priority_id: selectedPriorityId,
+      status_id: selectedStatusId,
+      department_id: selectedDepartmentId,
+      employee_id: selectedEmployeeId,
+    };
 
-    console.log(finalData);
+    console.log("Outgoing payload:", payload);
 
-    addTask.mutate(finalData, {
-       onSuccess: () => {
+    addTask.mutate(payload, {
+      onSuccess: () => {
         navigate("/");
       },
-      onError: (err) => {
-        console.error("Mutation error:", err);
-      }
-    })
+      onError: (err: unknown) => {
+        // Try to show backend validation response if available
+        // Axios errors carry response.data with details
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const anyErr = err as any;
+        if (anyErr?.response?.data) {
+          console.error("Backend validation error:", anyErr.response.data);
+        } else {
+          console.error("Mutation error:", err);
+        }
+      },
+    });
   };
 
   const [selectedPrior, setSelectcedPrior] = useState(null);

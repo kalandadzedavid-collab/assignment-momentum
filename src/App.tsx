@@ -9,17 +9,17 @@ import CreateTask from "./pages/CreateTask";
 
 const App = () => {
   const {
-    data: statuses,
+    data: tasks,
     error,
     isPending,
   } = useQuery({
-    queryKey: ["statuses"],
-    queryFn: () => getData("statuses"),
+    queryKey: ["tasks"],
+    queryFn: () => getData("tasks"),
   });
 
   const [coworkerWindow, setCoworkerWindow] = useState(false)
 
-  console.log(statuses);
+  console.log(tasks);
 
   if (isPending) return "Loading...";
   if (error) return "An error has occurred " + error.message;
