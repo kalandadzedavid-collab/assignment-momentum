@@ -1,8 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
-import { getData } from "../services/appApi";
-import type { priorities } from "../types/types";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { getData, postData } from "../services/appApi";
+import type { postTask, priorities, submitTask } from "../types/types";
 import { useMemo, useState } from "react";
 import type { departments, employees, statuses } from "../types/types";
+import { useForm, type SubmitHandler } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 
 const CreateTask = () => {
   const { data: priorities } = useQuery({
@@ -25,14 +27,71 @@ const CreateTask = () => {
     queryFn: () => getData("employees"),
   });
 
-  const [selectedPrior, setSelectcedPrior] = useState(1);
-  const [selectedDepart, setSelectedDepart] = useState(1);
+  const navigate = useNavigate()
 
-  console.log(priorities);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<submitTask>();
+
+  const addTask = useMutation({
+    mutationFn: (data: postTask) => postData("tasks", data),
+  });
+
+  const onSubmit: SubmitHandler<submitTask> = (data) => {
+    console.log(data);
+
+    const priority = priorities.filter((prior: priorities) => {
+      return prior.id == +data.priority;
+    });
+
+    const status = statuses.filter((stat: statuses) => {
+      return stat.id == +data.status;
+    });
+
+    const department = departments.filter((dep: departments) => {
+      return dep.id == +data.department;
+    });
+
+    const employee = employees.filter((emp: employees) => {
+      return emp.id == +data.employee;
+    });
+
+    const finalData: postTask = [
+      {
+        id: //automatic id here? how?,
+        ,
+        name: data.name,
+        description: data.description,
+        due_date: data.due_date,
+        status: status[0],
+        priority: priority[0],
+        department: department[0],
+        employee: employee[0],
+      },
+    ];
+
+    console.log(finalData);
+
+    addTask.mutate(finalData, {
+       onSuccess: () => {
+        navigate("/");
+      },
+      onError: (err) => {
+        console.error("Mutation error:", err);
+      }
+    })
+  };
+
+  const [selectedPrior, setSelectcedPrior] = useState(null);
+  const [selectedDepart, setSelectedDepart] = useState(null);
+
+  // console.log(priorities);
   console.log(statuses);
-  console.log(departments);
-  console.log(employees);
-  console.log(selectedDepart);
+  // console.log(departments);
+  // console.log(employees);
+  // console.log(selectedDepart);
 
   const filterWorkers = useMemo(() => {
     if (!employees) return [];
@@ -50,7 +109,10 @@ const CreateTask = () => {
         შექმენი ახალი დავალება
       </h1>
 
-      <form className="flex flex-col bg-[#FCFBFF] px-13.75 py-16.25">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col bg-[#FCFBFF] px-13.75 py-16.25"
+      >
         <div className="flex justify-between">
           <div className="flex flex-col gap-13.75">
             <label htmlFor="name">
@@ -62,22 +124,38 @@ font-normal"
                 სათაური*
               </p>
               <input
+                {...register("name", {
+                  required: "ველის შევსება სავალდებულოა",
+                  minLength: {
+                    value: 2,
+                    message: "მინიმუმ 2 სიმბოლო",
+                  },
+                  maxLength: {
+                    value: 255,
+                    message: "მაქსიმუმ 255 სიმბოლო",
+                  },
+                })}
                 id="name"
                 className="w-137.5 p-3.5 bg-white rounded-[5px] outline outline-zinc-200"
                 type="text"
               />
-              <p
-                className="text-gray-500
+              {!errors?.name && (
+                <div>
+                  <p
+                    className={`text-gray-500
+text-[10px]`}
+                  >
+                    მინიმუმ 2 სიმბოლო
+                  </p>
+                  <p
+                    className="text-gray-500
 text-[10px]"
-              >
-                მინიმუმ 2 სიმბოლო
-              </p>
-              <p
-                className="text-gray-500
-text-[10px]"
-              >
-                მაქსიმუმ 255 სიმბოლო
-              </p>
+                  >
+                    მაქსიმუმ 255 სიმბოლო
+                  </p>
+                </div>
+              )}
+              <p className="text-red-600">{errors?.name?.message}</p>
             </label>
 
             <label htmlFor="description">
@@ -89,21 +167,37 @@ font-normal"
                 აღწერა
               </p>
               <textarea
+                {...register("description", {
+                  required: "ველის შევსება სავალდებულოა",
+                  minLength: {
+                    value: 2,
+                    message: "მინიმუმ 2 სიმბოლო",
+                  },
+                  maxLength: {
+                    value: 255,
+                    message: "მაქსიმუმ 255 სიმბოლო",
+                  },
+                })}
                 id="description"
                 className="w-137.5 h-32 p-3.5 bg-white rounded-[5px] outline outline-zinc-200"
               />
-              <p
-                className="text-gray-500
+              {!errors?.description && (
+                <div>
+                  <p
+                    className={`text-gray-500
+text-[10px]`}
+                  >
+                    მინიმუმ 2 სიმბოლო
+                  </p>
+                  <p
+                    className="text-gray-500
 text-[10px]"
-              >
-                მინიმუმ 2 სიმბოლო
-              </p>
-              <p
-                className="text-gray-500
-text-[10px]"
-              >
-                მაქსიმუმ 255 სიმბოლო
-              </p>
+                  >
+                    მაქსიმუმ 255 სიმბოლო
+                  </p>
+                </div>
+              )}
+              <p className="text-red-600">{errors?.description?.message}</p>
             </label>
 
             <div className="flex gap-10">
@@ -117,14 +211,18 @@ font-normal"
                 </p>
                 <div className="rounded outline outline-zinc-200 px-5 flex gap-2 justify-start items-center bg-white w-64 h-11">
                   <img
-                    src={priorities && priorities[selectedPrior - 1].icon}
+                    src={priorities && priorities[selectedPrior - 1]?.icon}
                     alt=""
                   />
                   <select
+                    {...register("priority", {
+                      required: "სავალდებულოა",
+                    })}
                     onChange={(e) => setSelectcedPrior(+e.target.value)}
                     className="w-full outline-0"
                     id="priority"
                   >
+                    <option value="">აირჩიე პრიორიტეტი</option>
                     {priorities &&
                       priorities.map((priority: priorities) => {
                         return (
@@ -136,6 +234,7 @@ font-normal"
                       })}
                   </select>
                 </div>
+                <p className="text-red-400">{errors?.priority?.message}</p>
               </label>
 
               <label htmlFor="status">
@@ -147,10 +246,18 @@ font-normal"
                   სტატუსი
                 </p>
                 <div className="rounded outline outline-zinc-200 px-5 flex gap-2 justify-start items-center bg-white w-64 h-11">
-                  <select id="status" className="outline-0">
+                  <select
+                    {...register("status")}
+                    id="status"
+                    className="outline-0"
+                  >
                     {statuses &&
                       statuses.map((item: statuses) => {
-                        return <option key={item.id}>{item.name}</option>;
+                        return (
+                          <option value={item.id} key={item.id}>
+                            {item.name}
+                          </option>
+                        );
                       })}
                   </select>
                 </div>
@@ -170,10 +277,15 @@ font-normal"
 
               <div className="h-13 rounded outline outline-zinc-200 px-5 flex gap-2 justify-start items-center bg-white w-137.5">
                 <select
+                  defaultValue={""}
+                  {...register("department", {
+                    required: "აირჩიე დეპარტამენტი",
+                  })}
                   onChange={(e) => setSelectedDepart(+e.target.value)}
                   className="w-full outline-0"
                   id="departments"
                 >
+                  <option value={""}>აირჩიე დეპარტამენტი</option>
                   {departments &&
                     departments.map((depart: departments) => {
                       return (
@@ -184,6 +296,9 @@ font-normal"
                     })}
                 </select>
               </div>
+              <p className="text-red-400">
+                {errors.department && errors?.department?.message}
+              </p>
             </label>
 
             <label htmlFor="worker">
@@ -196,17 +311,39 @@ font-normal"
               </p>
 
               <div className="h-13 rounded outline outline-zinc-200 px-5 flex gap-2 justify-start items-center bg-white w-137.5">
-                <select className="w-full outline-0" id="worker">
+                <select
+                  {...register("employee", {
+                    required: "თანამშრომლის არჩევა სავალდებულოა",
+                  })}
+                  className="w-full outline-0"
+                  id="worker"
+                >
+                  <option value={""}>აირჩიე თანამშრომელი</option>
                   {filterWorkers &&
                     filterWorkers.map((worker: employees) => {
                       return (
-                        <option key={worker.id}>
+                        <option value={worker.id} key={worker.id}>
                           {worker.name + " " + worker.surname}
                         </option>
                       );
                     })}
                 </select>
               </div>
+              <p className="text-red-400">{errors?.employee?.message}</p>
+            </label>
+
+            <label htmlFor="deadline">
+              <div className="w-79.5 h-13 rounded outline outline-zinc-200 px-5 flex gap-2 justify-start items-center bg-white">
+                <input
+                  {...register("due_date", {
+                    required: "აირჩიე დედლაინი",
+                  })}
+                  className="outline-0"
+                  type="date"
+                  id="deadline"
+                />
+              </div>
+              <p className="text-red-400">{errors?.due_date?.message}</p>
             </label>
           </div>
         </div>
