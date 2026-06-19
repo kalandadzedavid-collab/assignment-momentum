@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { getData, putData } from "../services/appApi";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import DiffButton from "../components/DiffButton";
@@ -6,6 +6,7 @@ import DepartButton from "../components/DepartButton";
 
 const TaskDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate()
 
   const { data: task } = useQuery({
     queryKey: ["task"],
@@ -83,7 +84,15 @@ font-normal"
                     // Send only the expected primitive id field to the backend
                     const payload = { status_id: selectedStatusId };
                     console.log("Updating status with:", payload);
-                    updateTaskStatus.mutate(payload);
+                    updateTaskStatus.mutate(payload, {
+      onSuccess: () => {
+        navigate("/");
+      },
+      onError: (err) => {
+        console.error("Mutation error:", err);
+      },
+    });
+
                   }}
                   id="status"
                   className="outline-0"
