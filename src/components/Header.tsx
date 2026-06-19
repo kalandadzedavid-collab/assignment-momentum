@@ -8,7 +8,7 @@ const Header = ({ setCoworkerWindow }) => {
       <img
         className="cursor-pointer"
         onClick={() => navigate("/")}
-        src="./icons/logo.svg"
+        src="/icons/logo.svg"
         alt="logo"
       />
       <div className="flex gap-5">
