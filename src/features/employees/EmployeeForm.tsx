@@ -66,7 +66,7 @@ const EmployeeForm = ({ setCoworkerWindow }) => {
   };
 
   return (
-    <div className="flex justify-center items-center fixed inset-0 w-screen h-screen bg-neutral-950/20 backdrop-blur-[5px]">
+    <div className="z-10 flex justify-center items-center fixed inset-0 w-screen h-screen bg-neutral-950/20 backdrop-blur-[5px]">
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="bg-white py-15 px-12.5 rounded-2xl max-w-4xl w-full mx-4"
