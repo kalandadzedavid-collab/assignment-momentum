@@ -246,7 +246,11 @@ font-normal"
                 </p>
                 <div className="rounded outline outline-zinc-200 px-5 flex gap-2 justify-start items-center bg-white w-64 h-11">
                   <img
-                    src={priorities && priorities[selectedPrior - 1]?.icon}
+                    src={
+                      priorities && selectedPrior != null
+                        ? priorities[selectedPrior - 1]?.icon
+                        : undefined
+                    }
                     alt=""
                   />
                   <select

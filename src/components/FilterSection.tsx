@@ -3,14 +3,20 @@ import { getData } from "../services/appApi";
 import type { departments, priorities, employees } from "../types/types";
 import type { UseFormRegister, UseFormHandleSubmit } from "react-hook-form";
 
+type FormFields = {
+  departFilt: string[];
+  priorityFilt: string[];
+  employeeFilt: string[];
+};
+
 type FilterSectionProps = {
-  register: UseFormRegister<Record<string, unknown>>;
-  handleSubmit: UseFormHandleSubmit<Record<string, unknown>>;
-  handleDepartFilter: (data: unknown) => void;
+  register: UseFormRegister<FormFields>;
+  handleSubmit: UseFormHandleSubmit<FormFields>;
+  handleDepartFilter: (data: FormFields) => void;
   showFilts: number | null;
   setShowFilts: (v: number | null) => void;
-  handlePriorityFilter: (data: unknown) => void;
-  handleEmployeeFilter: (data: unknown) => void;
+  handlePriorityFilter: (data: FormFields) => void;
+  handleEmployeeFilter: (data: FormFields) => void;
 };
 
 const FilterSection = ({

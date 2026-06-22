@@ -15,24 +15,29 @@ const Home = () => {
 
   // console.log(tasks);
 
-  const { register, handleSubmit } = useForm();
+  type FormFields = {
+    departFilt: string[];
+    priorityFilt: string[];
+    employeeFilt: string[];
+  };
+  const { register, handleSubmit } = useForm<FormFields>();
 
   const [departFilt, setDepartFilt] = useState<string[]>([]);
   const [priorityFilt, setPriorityFilt] = useState<string[]>([]);
   const [showFilts, setShowFilts] = useState<number | null>(null);
   const [employeeFilt, setEmployeeFilt] = useState<string[]>([]);
 
-  function handleDepartFilter(data: { departFilt: string[] }) {
+  function handleDepartFilter(data: FormFields) {
     setDepartFilt(data.departFilt);
     setShowFilts(null);
   }
 
-  function handlePriorityFilter(data: { priorityFilt: string[] }) {
+  function handlePriorityFilter(data: FormFields) {
     setPriorityFilt(data.priorityFilt);
     setShowFilts(null);
   }
 
-  function handleEmployeeFilter(data: { employeeFilt: string[] }) {
+  function handleEmployeeFilter(data: FormFields) {
     setEmployeeFilt(data.employeeFilt);
     setShowFilts(null);
   }
