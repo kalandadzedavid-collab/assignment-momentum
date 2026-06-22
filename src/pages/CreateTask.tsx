@@ -119,8 +119,8 @@ const CreateTask = () => {
     });
   };
 
-  const [selectedPrior, setSelectcedPrior] = useState(null);
-  const [selectedDepart, setSelectedDepart] = useState(null);
+  const [selectedPrior, setSelectcedPrior] = useState<number | null>(null);
+  const [selectedDepart, setSelectedDepart] = useState<number | null>(null);
 
   // console.log(priorities);
   console.log(statuses);

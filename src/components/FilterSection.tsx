@@ -1,5 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { getData } from "../services/appApi";
+import type { departments, priorities, employees } from "../types/types";
+import type { UseFormRegister, UseFormHandleSubmit } from "react-hook-form";
+
+type FilterSectionProps = {
+  register: UseFormRegister<Record<string, unknown>>;
+  handleSubmit: UseFormHandleSubmit<Record<string, unknown>>;
+  handleDepartFilter: (data: unknown) => void;
+  showFilts: number | null;
+  setShowFilts: (v: number | null) => void;
+  handlePriorityFilter: (data: unknown) => void;
+  handleEmployeeFilter: (data: unknown) => void;
+};
 
 const FilterSection = ({
   register,
@@ -9,7 +21,7 @@ const FilterSection = ({
   setShowFilts,
   handlePriorityFilter,
   handleEmployeeFilter,
-}) => {
+}: FilterSectionProps) => {
   const { data: departments } = useQuery({
     queryKey: ["departments"],
     queryFn: () => getData("departments"),
@@ -53,7 +65,7 @@ font-normal"
               onSubmit={handleSubmit(handleDepartFilter)}
             >
               {departments &&
-                departments.map((depart) => {
+                departments.map((depart: departments) => {
                   return (
                     <label
                       className="flex gap-3 items-center"
@@ -107,7 +119,7 @@ font-normal"
               onSubmit={handleSubmit(handlePriorityFilter)}
             >
               {priorities &&
-                priorities.map((priority) => {
+                priorities.map((priority: priorities) => {
                   return (
                     <label
                       className="flex gap-3 items-center"
@@ -161,7 +173,7 @@ font-normal"
               onSubmit={handleSubmit(handleEmployeeFilter)}
             >
               {employees &&
-                employees.map((employee) => {
+                employees.map((employee: employees) => {
                   return (
                     <label
                       className="flex gap-3 items-center"

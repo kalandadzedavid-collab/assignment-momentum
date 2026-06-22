@@ -1,13 +1,27 @@
 import { Link } from "react-router-dom";
 import DepartButton from "./DepartButton";
 import DiffButton from "./DiffButton";
+import type { postTask } from "../types/types";
 
-const Task = ({ data, outline_col }) => {
-  const formatedDate = new Date(data.due_date).toLocaleDateString("ka-GE", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+type TaskData = Partial<postTask> & {
+  total_comments?: number;
+  id: string | number;
+};
+
+const Task = ({
+  data,
+  outline_col,
+}: {
+  data: TaskData;
+  outline_col?: string;
+}) => {
+  const formatedDate = data.due_date
+    ? new Date(data.due_date).toLocaleDateString("ka-GE", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
+    : "";
 
   // console.log(data);
   return (
@@ -16,8 +30,8 @@ const Task = ({ data, outline_col }) => {
         className={`${outline_col} max-w-95.25 p-5 bg-white rounded-2xl outline`}
       >
         <div className="flex gap-2">
-          <DiffButton priority={data.priority} />
-          <DepartButton depart={data.department} />
+          {data.priority && <DiffButton priority={data.priority} />}
+          {data.department && <DepartButton depart={data.department} />}
           <p className="ml-auto">{formatedDate}</p>
         </div>
 
@@ -41,12 +55,12 @@ font-normal"
         <div className="flex justify-between">
           <img
             className="size-8 rounded-full"
-            src={data.employee.avatar}
+            src={data.employee?.avatar ?? ""}
             alt=""
           />
           <button className="flex items-center gap-1">
             <img src="./icons/Comments.svg" alt="" />
-            {data.total_comments}
+            {data.total_comments ?? 0}
           </button>
         </div>
       </div>

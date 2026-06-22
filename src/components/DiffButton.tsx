@@ -1,4 +1,6 @@
-const DiffButton = ({ priority }) => {
+import type { priorities } from "../types/types";
+
+const DiffButton = ({ priority }: { priority: priorities }) => {
   return (
     <button
       className={`flex items-center gap-2 text-xs

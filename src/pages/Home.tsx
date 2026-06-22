@@ -1,13 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import Task from "../components/Task";
+import type { postTask } from "../types/types";
 import { getData } from "../services/appApi";
 import StatusButton from "../components/StatusButton";
 import FilterSection from "../components/FilterSection";
 import { useForm } from "react-hook-form";
-import { useMemo, useState, type SetStateAction } from "react";
+import { useMemo, useState } from "react";
 
 const Home = () => {
-  const { data: tasks } = useQuery({
+  const { data: tasks } = useQuery<postTask[]>({
     queryKey: ["tasks"],
     queryFn: () => getData("tasks"),
   });
@@ -16,22 +17,22 @@ const Home = () => {
 
   const { register, handleSubmit } = useForm();
 
-  const [departFilt, setDepartFilt] = useState([]);
-  const [priorityFilt, setPriorityFilt] = useState([]);
-  const [showFilts, setShowFilts] = useState(null);
-  const [employeeFilt, setEmployeeFilt] = useState([]);
+  const [departFilt, setDepartFilt] = useState<string[]>([]);
+  const [priorityFilt, setPriorityFilt] = useState<string[]>([]);
+  const [showFilts, setShowFilts] = useState<number | null>(null);
+  const [employeeFilt, setEmployeeFilt] = useState<string[]>([]);
 
-  function handleDepartFilter(data: { departFilt: SetStateAction<unknown[]> }) {
+  function handleDepartFilter(data: { departFilt: string[] }) {
     setDepartFilt(data.departFilt);
     setShowFilts(null);
   }
 
-  function handlePriorityFilter(data: { priorityFilt: SetStateAction<unknown[]>; }) {
+  function handlePriorityFilter(data: { priorityFilt: string[] }) {
     setPriorityFilt(data.priorityFilt);
     setShowFilts(null);
   }
 
-  function handleEmployeeFilter(data: { employeeFilt: SetStateAction<unknown[]>; }) {
+  function handleEmployeeFilter(data: { employeeFilt: string[] }) {
     setEmployeeFilt(data.employeeFilt);
     setShowFilts(null);
   }
@@ -42,31 +43,31 @@ const Home = () => {
   console.log(tasks);
 
   const filteredTasks = useMemo(() => {
-  return tasks.filter((task: { 
-    department: { id: number }; 
-    priority: { id: number }; 
-    employee?: { id: number }; // Made optional (?) just in case a task doesn't have an assignee yet
-  }) => {
-    
-    // 1. Department Filter
-    const matchesDepartment = departFilt.length > 0 
-      ? departFilt.includes(task.department.id.toString()) 
-      : true;
+    return (tasks ?? []).filter((task: postTask) => {
+      // 1. Department Filter
+      const matchesDepartment =
+        departFilt.length > 0
+          ? departFilt.includes(task.department.id.toString())
+          : true;
 
-    // 2. Priority Filter
-    const matchesPriority = priorityFilt.length > 0 
-      ? priorityFilt.includes(task.priority.id.toString()) 
-      : true;
+      // 2. Priority Filter
+      const matchesPriority =
+        priorityFilt.length > 0
+          ? priorityFilt.includes(task.priority.id.toString())
+          : true;
 
-    // 3. Employee Filter
-    const matchesEmployee = employeeFilt.length > 0 
-      ? (task.employee ? employeeFilt.includes(task.employee.id.toString()) : false)
-      : true;
+      // 3. Employee Filter
+      const matchesEmployee =
+        employeeFilt.length > 0
+          ? task.employee
+            ? employeeFilt.includes(task.employee.id.toString())
+            : false
+          : true;
 
-    // The task must satisfy ALL THREE active filter conditions
-    return matchesDepartment && matchesPriority && matchesEmployee;
-  });
-}, [tasks, departFilt, priorityFilt, employeeFilt]); // Added employeeFilt to dependencies
+      // The task must satisfy ALL THREE active filter conditions
+      return matchesDepartment && matchesPriority && matchesEmployee;
+    });
+  }, [tasks, departFilt, priorityFilt, employeeFilt]); // Added employeeFilt to dependencies
 
   console.log(filteredTasks);
 
@@ -96,7 +97,7 @@ font-semibold"
             .filter((task: { status: { name: string } }) => {
               return task?.status?.name == "დასაწყები";
             })
-            .map((filt: { status: { name: string }; id: string | number }) => {
+            .map((filt) => {
               return (
                 <Task
                   key={filt.id}
@@ -114,32 +115,26 @@ font-semibold"
             .filter((task: { status: { name: string } }) => {
               return task?.status?.name == "პროგრესში";
             })
-            .map((filt: { status: { name: string }; id: string | number }) => {
-              return (
-                <Task
-                  key={filt.id}
-                  data={filt}
-                  outline_col={`outline-[#FB5607]`}
-                />
-              );
-            })}
+            .map((filt) => (
+              <Task
+                key={filt.id}
+                data={filt}
+                outline_col={`outline-[#FB5607]`}
+              />
+            ))}
         </section>
 
         <section className="flex flex-col gap-7.5">
           <StatusButton status={"მზად ტესტირებისთვის"} color={`bg-[#FF006E]`} />
           {filteredTasks
-            .filter((task: { status: { name: string } }) => {
-              return task?.status?.name == "მზად ტესტირებისთვის";
-            })
-            .map((filt: { status: { name: string }; id: string | number }) => {
-              return (
-                <Task
-                  key={filt.id}
-                  data={filt}
-                  outline_col={`outline-[#FF2080]`}
-                />
-              );
-            })}
+            .filter((task) => task?.status?.name == "მზად ტესტირებისთვის")
+            .map((filt) => (
+              <Task
+                key={filt.id}
+                data={filt}
+                outline_col={`outline-[#FF2080]`}
+              />
+            ))}
         </section>
 
         <section className="flex flex-col gap-7.5">
@@ -149,15 +144,13 @@ font-semibold"
             .filter((task: { status: { name: string } }) => {
               return task?.status?.name == "დასრულებული";
             })
-            .map((filt: { status: { name: string }; id: string | number }) => {
-              return (
-                <Task
-                  key={filt.id}
-                  data={filt}
-                  outline_col={`outline-[#3A86FF]`}
-                />
-              );
-            })}
+            .map((filt) => (
+              <Task
+                key={filt.id}
+                data={filt}
+                outline_col={`outline-[#3A86FF]`}
+              />
+            ))}
         </section>
       </div>
     </main>

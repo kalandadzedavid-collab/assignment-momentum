@@ -1,11 +1,15 @@
-import { useState, useRef, type ChangeEvent } from "react";
+import { useState, type ChangeEvent } from "react";
 import { getData, postData } from "../../services/appApi";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import type { Inputs } from "../../types/types";
 
-const EmployeeForm = ({ setCoworkerWindow }) => {
+const EmployeeForm = ({
+  setCoworkerWindow,
+}: {
+  setCoworkerWindow: (v: boolean) => void;
+}) => {
   const { data: departments } = useQuery({
     queryKey: ["departments"],
     queryFn: () => getData("departments"),
@@ -14,7 +18,7 @@ const EmployeeForm = ({ setCoworkerWindow }) => {
   const addWorker = useMutation({
     mutationFn: (data: FormData) => postData("employees", data),
   });
-  
+
   const {
     register,
     handleSubmit,
@@ -44,8 +48,7 @@ const EmployeeForm = ({ setCoworkerWindow }) => {
     });
   };
 
-  const [imagePreview, setImagePreview] = useState(null);
-  const fileInputRef = useRef(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   // Handle avatar selection and display preview
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>): void => {
@@ -60,9 +63,10 @@ const EmployeeForm = ({ setCoworkerWindow }) => {
   const handleDeleteAvatar = (e: React.MouseEvent<HTMLButtonElement>): void => {
     e.stopPropagation(); // Stops the container click event from re-opening file selection
     setImagePreview(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    const inputEl = document.getElementById(
+      "avatar-upload"
+    ) as HTMLInputElement | null;
+    if (inputEl) inputEl.value = "";
   };
 
   return (
