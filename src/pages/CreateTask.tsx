@@ -139,7 +139,7 @@ const CreateTask = () => {
   console.log("filtered", filterWorkers);
 
   return (
-    <main className="mt-10 px-30">
+    <main className="mt-10 px-10">
       <h1 className="mb-6 text-neutral-800 text-2xl font-semibold">
         შექმენი ახალი დავალება
       </h1>
@@ -148,7 +148,7 @@ const CreateTask = () => {
         onSubmit={handleSubmit(onSubmit)}
         className="flex flex-col bg-[#FCFBFF] px-13.75 py-16.25"
       >
-        <div className="flex justify-between">
+        <div className="flex flex-col xl:flex-row gap-5 justify-between">
           <div className="flex flex-col gap-13.75">
             <label htmlFor="name">
               <p
@@ -171,7 +171,7 @@ font-normal"
                   },
                 })}
                 id="name"
-                className="w-137.5 p-3.5 bg-white rounded-[5px] outline outline-zinc-200"
+                className="w-full xl:w-137.5 p-3.5 bg-white rounded-[5px] outline outline-zinc-200"
                 type="text"
               />
               {!errors?.name && (
@@ -214,7 +214,7 @@ font-normal"
                   },
                 })}
                 id="description"
-                className="w-137.5 h-32 p-3.5 bg-white rounded-[5px] outline outline-zinc-200"
+                className="w-full xl:w-137.5 h-32 p-3.5 bg-white rounded-[5px] outline outline-zinc-200"
               />
               {!errors?.description && (
                 <div>
@@ -235,7 +235,7 @@ text-[10px]"
               <p className="text-red-600">{errors?.description?.message}</p>
             </label>
 
-            <div className="flex gap-10">
+            <div className="flex flex-col xl:flex-row gap-10">
               <label htmlFor="priority">
                 <p
                   className="text-neutral-700
@@ -258,7 +258,7 @@ font-normal"
                       required: "სავალდებულოა",
                     })}
                     onChange={(e) => setSelectcedPrior(+e.target.value)}
-                    className="w-full outline-0"
+                    className="w-full text-[12px] outline-0 md:text-base"
                     id="priority"
                   >
                     <option value="">აირჩიე პრიორიტეტი</option>
@@ -288,7 +288,7 @@ font-normal"
                   <select
                     {...register("status")}
                     id="status"
-                    className="outline-0"
+                    className="outline-0 w-full text-[12px] md:text-base"
                   >
                     {statuses &&
                       statuses.map((item: statuses) => {
@@ -314,14 +314,14 @@ font-normal"
                 დეპარტამენტი
               </p>
 
-              <div className="h-13 rounded outline outline-zinc-200 px-5 flex gap-2 justify-start items-center bg-white w-137.5">
+              <div className="h-13 rounded outline outline-zinc-200 px-5 flex gap-2 justify-start items-center bg-white w-[70%] xl:w-137.5">
                 <select
                   defaultValue={""}
                   {...register("department", {
                     required: "აირჩიე დეპარტამენტი",
                   })}
                   onChange={(e) => setSelectedDepart(+e.target.value)}
-                  className="w-full outline-0"
+                  className="w-full outline-0 text-[9px] md:text-base"
                   id="departments"
                 >
                   <option value={""}>აირჩიე დეპარტამენტი</option>
@@ -340,7 +340,7 @@ font-normal"
               </p>
             </label>
 
-            <label htmlFor="worker">
+            <label htmlFor="worker" className="my-5 xl:my-[unset]">
               <p
                 className="text-gray-400
 text-base
@@ -349,12 +349,12 @@ font-normal"
                 პასუხისმგებელი თანამშრომელი
               </p>
 
-              <div className="h-13 rounded outline outline-zinc-200 px-5 flex gap-2 justify-start items-center bg-white w-137.5">
+              <div className="h-13 rounded outline outline-zinc-200 px-5 flex gap-2 justify-start items-center bg-white w-[70%] xl:w-137.5">
                 <select
                   {...register("employee", {
                     required: "თანამშრომლის არჩევა სავალდებულოა",
                   })}
-                  className="w-full outline-0"
+                  className="w-full outline-0 text-[11px] md:text-base"
                   id="worker"
                 >
                   <option value={""}>აირჩიე თანამშრომელი</option>
@@ -372,7 +372,7 @@ font-normal"
             </label>
 
             <label htmlFor="deadline">
-              <div className="w-79.5 h-13 rounded outline outline-zinc-200 px-5 flex gap-2 justify-start items-center bg-white">
+              <div className="w-[70%] xl:w-79.5 h-13 rounded outline outline-zinc-200 px-5 flex gap-2 justify-start items-center bg-white">
                 <input
                   {...register("due_date", {
                     required: "აირჩიე დედლაინი",
@@ -388,7 +388,7 @@ font-normal"
         </div>
 
         <button
-          className="self-end px-5 py-2.5 bg-[#8338EC] text-white"
+          className="mt-10 self-end px-5 py-2.5 bg-[#8338EC] text-white"
           type="submit"
         >
           დავალების შექმნა

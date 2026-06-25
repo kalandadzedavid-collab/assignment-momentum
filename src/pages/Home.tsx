@@ -77,9 +77,9 @@ const Home = () => {
   console.log(filteredTasks);
 
   return (
-    <main className="px-30">
+    <main className="mb-10 md:px-15 flex flex-col items-center">
       <h1
-        className="mt-10 mb-12.5 text-neutral-800
+        className="mt-10 mb-12.5 text-neutral-800 text-center md:text-start 
 text-2xl
 font-semibold"
       >
@@ -94,7 +94,7 @@ font-semibold"
         register={register}
         handleSubmit={handleSubmit}
       />
-      <div className="flex justify-between">
+      <div className="flex flex-col 2xl:flex-row 2xl:flex-wrap 2xl:items-start gap-10 items-center justify-between">
         <section className="flex flex-col gap-7.5">
           <StatusButton status={"დასაწყები"} color={`bg-[#F7BC30]`} />
 

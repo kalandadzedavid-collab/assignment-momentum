@@ -70,10 +70,10 @@ const EmployeeForm = ({
   };
 
   return (
-    <div className="z-10 flex justify-center items-center fixed inset-0 w-screen h-screen bg-neutral-950/20 backdrop-blur-[5px]">
+    <div className="px-2 z-10 flex justify-center items-center fixed inset-0 w-screen h-screen bg-neutral-950/20 backdrop-blur-[5px]">
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="bg-white py-15 px-12.5 rounded-2xl max-w-4xl w-full mx-4"
+        className="bg-white xl:py-15 px-5 xl:px-12.5 py-5 rounded-2xl max-w-4xl w-full"
       >
         {/* Close Button */}
         <img
@@ -84,12 +84,12 @@ const EmployeeForm = ({
         />
 
         {/* Form Title */}
-        <h2 className="text-neutral-800 text-3xl font-medium mb-10.5 text-center">
+        <h2 className="text-neutral-800 text-xl xl:text-3xl font-medium mb-10.5 text-center">
           თანამშრომლის დამატება
         </h2>
 
         {/* Input Fields Row */}
-        <div className="flex gap-11.5 mb-11.5">
+        <div className="flex flex-col xl:flex-row gap-5 xl:gap-11.5 mb-11.5">
           {/* First Name Field */}
           <label className="flex flex-col" htmlFor="name">
             <p className="text-neutral-700 text-sm font-medium">სახელი*</p>

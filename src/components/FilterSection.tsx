@@ -46,7 +46,7 @@ const FilterSection = ({
   console.log(employees);
 
   return (
-    <section className="relative mb-19.75 px-3 py-3 inline-flex gap-11.25 rounded-[10px] outline outline-zinc-200">
+    <section className="relative mb-19.75 px-1 md:px-3 py-3 inline-flex gap-5 md:gap-11 rounded-[10px] outline outline-zinc-200">
       <div>
         <button
           onClick={() => {
@@ -57,7 +57,7 @@ const FilterSection = ({
             }
           }}
           className="cursor-pointer flex gap-2 items-center text-neutral-950
-text-base
+text-[10px] md:text-base
 font-normal"
         >
           დეპარტამენტი
@@ -67,7 +67,7 @@ font-normal"
         {showFilts == 1 && (
           <div className="bg-white left-0 top-15 absolute rounded-[10px] px-7.5 py-5 outline-[0.50px] outline-violet-600">
             <form
-              className="min-w-50 flex flex-col"
+              className="min-w-50 flex flex-col gap-3"
               onSubmit={handleSubmit(handleDepartFilter)}
             >
               {departments &&
@@ -111,7 +111,7 @@ font-normal"
             }
           }}
           className="cursor-pointer flex gap-2 items-center text-neutral-950
-text-base
+text-[10px] md:text-base
 font-normal"
         >
           პრიორიტეტი
@@ -119,9 +119,9 @@ font-normal"
         </button>
 
         {showFilts == 2 && (
-          <div className="bg-white left-0 top-15 absolute rounded-[10px] px-7.5 py-5 outline-[0.50px] outline-violet-600">
+          <div className="bg-white left-50% translate-x-[-25%] top-15 absolute rounded-[10px] px-7.5 py-5 outline-[0.50px] outline-violet-600">
             <form
-              className="min-w-50 flex flex-col"
+              className="min-w-50 flex flex-col gap-3"
               onSubmit={handleSubmit(handlePriorityFilter)}
             >
               {priorities &&
@@ -165,7 +165,7 @@ font-normal"
             }
           }}
           className="cursor-pointer flex gap-2 items-center text-neutral-950
-text-base
+text-[10px] md:text-base
 font-normal"
         >
           თანამშრომელი
@@ -173,9 +173,9 @@ font-normal"
         </button>
 
         {showFilts == 3 && (
-          <div className="bg-white left-0 top-15 absolute rounded-[10px] px-7.5 py-5 outline-[0.50px] outline-violet-600">
+          <div className="bg-white right-0 top-15 absolute rounded-[10px] px-7.5 py-5 outline-[0.50px] outline-violet-600">
             <form
-              className="min-w-50 flex flex-col"
+              className="min-w-50 flex flex-col gap-3"
               onSubmit={handleSubmit(handleEmployeeFilter)}
             >
               {employees &&
