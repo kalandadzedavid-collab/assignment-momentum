@@ -1,7 +1,7 @@
 import CommentDiv from "./CommentDiv";
+import type { Comment } from "../types/types";
 
-const Comments = ({ comments }) => {
-
+const Comments = ({ comments }: { comments?: Comment[] | null }) => {
   return (
     <section className="max-h-100 overflow-y-scroll mt-10 flex flex-col gap-10">
       <div className="flex gap-3 items-center">
@@ -22,7 +22,7 @@ font-medium w-7 h-5 flex items-center justify-center bg-violet-600 rounded-[30px
       </div>
 
       {comments &&
-        comments.map((comment) => {
+        comments.map((comment: Comment) => {
           return <CommentDiv key={comment.id} comment={comment} />;
         })}
     </section>

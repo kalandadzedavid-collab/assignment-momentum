@@ -25,43 +25,51 @@ export type employees = {
   id: number;
   name: string;
   surname: string;
-  avatar: string,
-  department_id: number
+  avatar: string;
+  department_id: number;
 };
 
 export type submitTask = {
-name: string,
-description: string,
-due_date: string,
-employee: string,
-priority: string,
-status: string
-department: string
-}
+  name: string;
+  description: string;
+  due_date: string;
+  employee: string;
+  priority: string;
+  status: string;
+  department: string;
+};
 
 export type postTask = {
-  id: number,
-  name: string,
-  description: string,
-  due_date: string,
+  id: number;
+  name: string;
+  description: string;
+  due_date: string;
   status: {
-    id: number,
-    name: string
-  },
+    id: number;
+    name: string;
+  };
   priority: {
-    id: number,
-    name: string,
-    icon: string
-  },
+    id: number;
+    name: string;
+    icon: string;
+  };
   department: {
-    id: number,
-    name: string
-  },
+    id: number;
+    name: string;
+  };
   employee: {
-    id: number,
-    name: string,
-    surname: string,
-    avatar: string,
-    department_id: number
-  }
-}
+    id: number;
+    name: string;
+    surname: string;
+    avatar: string;
+    department_id: number;
+  };
+};
+
+export type Comment = {
+  id: number;
+  text: string;
+  author_avatar?: string;
+  author_nickname?: string;
+  parent_id?: number | null;
+};

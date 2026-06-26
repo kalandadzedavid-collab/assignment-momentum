@@ -30,7 +30,7 @@ const TaskDetails = () => {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm();
+  } = useForm<{ text: string }>();
 
   const addComment = useMutation({
     mutationFn: (data: { text: string; parent_id: null }) =>
@@ -41,7 +41,6 @@ const TaskDetails = () => {
 
   function handleComment(data: { text: string }) {
     const finalComment = { ...data, parent_id: null };
-    
 
     addComment.mutate(finalComment, {
       onSuccess: () => {
@@ -59,8 +58,6 @@ const TaskDetails = () => {
     mutationFn: (data: unknown) => putData(`tasks/${id}`, data),
   });
 
-  
-
   const formatedDate = `${new Date(task?.due_date).toLocaleDateString("en-GB", {
     weekday: "short",
   })} - ${new Date(task?.due_date).toLocaleDateString("en-GB", {
@@ -68,7 +65,7 @@ const TaskDetails = () => {
     month: "2-digit",
     year: "numeric",
   })}`;
-  
+
   return (
     <main className="px-30 mt-12.5 flex justify-between">
       <section>
@@ -205,10 +202,8 @@ font-normal"
       </section>
       <section className="bg-[#FAF7FE] outline-[0.30px] outline-offset-[-0.30px] outline-violet-200 rounded-[10px] p-10">
         {errors?.text?.message && (
-  <p className="text-red-500">
-    {errors.text.message as string}
-  </p>
-)}
+          <p className="text-red-500">{errors.text.message as string}</p>
+        )}
         <form
           onSubmit={handleSubmit(handleComment)}
           className="bg-white p-5 flex flex-col rounded-[10px] outline-[0.30px] outline-offset-[-0.30px] outline-gray-400"

@@ -1,5 +1,6 @@
-const CommentDiv = ({ comment }) => {
- 
+import type { Comment } from "../types/types";
+
+const CommentDiv = ({ comment }: { comment: Comment }) => {
   return (
     <div className="flex gap-4">
       <img
