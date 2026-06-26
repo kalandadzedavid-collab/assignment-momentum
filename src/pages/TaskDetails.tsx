@@ -67,7 +67,7 @@ const TaskDetails = () => {
   })}`;
 
   return (
-    <main className="px-30 mt-12.5 flex justify-between">
+    <main className="mb-20 px-10 mt-12.5 gap-10 flex flex-col xl:flex-row justify-between">
       <section>
         <div className="flex gap-2">
           {task && <DiffButton priority={task.priority} />}
@@ -93,13 +93,13 @@ font-normal"
 
         <div className="flex flex-col gap-6">
           <h2
-            className=" mt-18.25 text-zinc-800
+            className="mt-18.25 text-zinc-800
 text-2xl
 font-medium"
           >
             დავალების დეტალები
           </h2>
-          <div className="flex items-center gap-15">
+          <div className="flex flex-col gap-5 items-start xl:flex-row xl:items-center xl:gap-15">
             <button
               className="flex gap-1 text-zinc-700
 text-base
@@ -109,7 +109,7 @@ font-normal"
               სტატუსი
             </button>
             <label htmlFor="status">
-              <div className="rounded outline outline-zinc-200 px-5 flex gap-2 justify-start items-center bg-white w-64 h-11">
+              <div className="rounded outline outline-zinc-200 px-5 flex gap-2 justify-start items-center bg-white w-55 h-11">
                 <select
                   onChange={(e) => {
                     const selectedStatusId = Number(e.target.value);
@@ -126,7 +126,7 @@ font-normal"
                     });
                   }}
                   id="status"
-                  className="outline-0"
+                  className="outline-0 pr-5"
                 >
                   <option selected disabled>
                     შეცვალე სტატუსი
@@ -148,7 +148,7 @@ font-normal"
               </div>
             </label>
           </div>
-          <div className="flex items-center gap-10">
+          <div className="flex flex-col gap-5 items-start xl:flex-row xl:items-center xl:gap-15">
             <button
               className="flex gap-1 text-zinc-700
 text-base
@@ -181,7 +181,7 @@ font-normal"
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-10">
+          <div className="flex flex-col gap-5 items-start xl:flex-row xl:items-center xl:gap-15">
             <button
               className="flex gap-1 text-zinc-700
 text-base
@@ -216,7 +216,7 @@ font-normal"
                 message: "minimum length is 2 characters",
               },
             })}
-            className="resize-none outline-0 w-162.75 h-20"
+            className="xl:w-185.25 resize-none outline-0 w-full h-20"
             placeholder="დაწერე კომენტარი"
           ></textarea>
 
