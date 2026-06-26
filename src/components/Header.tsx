@@ -10,7 +10,7 @@ const Header = ({
   return (
     <header className="flex items-center justify-between flex-col md:flex-row gap-5 md:px-15 py-7.75 border-b border-b-[#8338EC]">
       <img
-        className="cursor-pointer w-[150px] xl:w-[unset]"
+        className="cursor-pointer w-37.5 xl:w-[unset]"
         onClick={() => navigate("/")}
         src="/icons/logo.svg"
         alt="logo"

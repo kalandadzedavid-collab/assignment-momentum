@@ -79,7 +79,7 @@ const EmployeeForm = ({
         <img
           onClick={() => setCoworkerWindow(false)}
           className="justify-self-end mb-10 cursor-pointer"
-          src="./icons/Cancel.svg"
+          src="/icons/Cancel.svg"
           alt="cancel"
         />
 

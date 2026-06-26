@@ -13,7 +13,6 @@ const Home = () => {
     queryFn: () => getData("tasks"),
   });
 
-  // console.log(tasks);
 
   type FormFields = {
     departFilt: string[];
@@ -42,10 +41,6 @@ const Home = () => {
     setShowFilts(null);
   }
 
-  // console.log(departFilt);
-  // console.log(priorityFilt)
-  console.log(employeeFilt);
-  console.log(tasks);
 
   const filteredTasks = useMemo(() => {
     return (tasks ?? []).filter((task: postTask) => {
@@ -74,7 +69,7 @@ const Home = () => {
     });
   }, [tasks, departFilt, priorityFilt, employeeFilt]); // Added employeeFilt to dependencies
 
-  console.log(filteredTasks);
+ 
 
   return (
     <main className="mb-10 md:px-15 flex flex-col items-center">

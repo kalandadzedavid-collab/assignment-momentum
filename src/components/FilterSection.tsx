@@ -43,7 +43,7 @@ const FilterSection = ({
     queryFn: () => getData("employees"),
   });
 
-  console.log(employees);
+
 
   return (
     <section className="relative mb-19.75 px-1 md:px-3 py-3 inline-flex gap-5 md:gap-11 rounded-[10px] outline outline-zinc-200">

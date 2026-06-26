@@ -23,7 +23,7 @@ const Task = ({
       })
     : "";
 
-  // console.log(data);
+
   return (
     <Link to={`details/${data.id}`}>
       <div

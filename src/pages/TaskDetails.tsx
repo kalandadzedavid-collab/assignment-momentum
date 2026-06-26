@@ -1,12 +1,19 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { getData, putData } from "../services/appApi";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { getData, postData, putData } from "../services/appApi";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import DiffButton from "../components/DiffButton";
 import DepartButton from "../components/DepartButton";
+import Comments from "../components/Comments";
+import { useForm } from "react-hook-form";
 
 const TaskDetails = () => {
   const { id } = useParams();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+
+  const { data: comments } = useQuery({
+    queryKey: ["comments"],
+    queryFn: () => getData(`tasks/${id}/comments`),
+  });
 
   const { data: task } = useQuery({
     queryKey: ["task"],
@@ -18,13 +25,41 @@ const TaskDetails = () => {
     queryFn: () => getData("statuses"),
   });
 
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm();
+
+  const addComment = useMutation({
+    mutationFn: (data: { text: string; parent_id: null }) =>
+      postData(`tasks/${id}/comments`, data),
+  });
+
+  const queryClient = useQueryClient();
+
+  function handleComment(data: { text: string }) {
+    const finalComment = { ...data, parent_id: null };
+    
+
+    addComment.mutate(finalComment, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["comments"] });
+        reset();
+      },
+      onError: (err) => {
+        console.error("Mutation error:", err);
+      },
+    });
+  }
+
   const updateTaskStatus = useMutation({
     // Accept an object containing the task id and the new status
     mutationFn: (data: unknown) => putData(`tasks/${id}`, data),
   });
 
-  console.log(statuses);
-  console.log(task);
+  
 
   const formatedDate = `${new Date(task?.due_date).toLocaleDateString("en-GB", {
     weekday: "short",
@@ -33,9 +68,9 @@ const TaskDetails = () => {
     month: "2-digit",
     year: "numeric",
   })}`;
-  console.log(formatedDate);
+  
   return (
-    <main className="px-30 mt-12.5">
+    <main className="px-30 mt-12.5 flex justify-between">
       <section>
         <div className="flex gap-2">
           {task && <DiffButton priority={task.priority} />}
@@ -85,14 +120,13 @@ font-normal"
                     const payload = { status_id: selectedStatusId };
                     console.log("Updating status with:", payload);
                     updateTaskStatus.mutate(payload, {
-      onSuccess: () => {
-        navigate("/");
-      },
-      onError: (err) => {
-        console.error("Mutation error:", err);
-      },
-    });
-
+                      onSuccess: () => {
+                        navigate("/");
+                      },
+                      onError: (err) => {
+                        console.error("Mutation error:", err);
+                      },
+                    });
                   }}
                   id="status"
                   className="outline-0"
@@ -168,6 +202,40 @@ font-normal"
             </p>
           </div>
         </div>
+      </section>
+      <section className="bg-[#FAF7FE] outline-[0.30px] outline-offset-[-0.30px] outline-violet-200 rounded-[10px] p-10">
+        {errors?.text?.message && (
+  <p className="text-red-500">
+    {errors.text.message as string}
+  </p>
+)}
+        <form
+          onSubmit={handleSubmit(handleComment)}
+          className="bg-white p-5 flex flex-col rounded-[10px] outline-[0.30px] outline-offset-[-0.30px] outline-gray-400"
+        >
+          <textarea
+            {...register("text", {
+              required: "text is required",
+              minLength: {
+                value: 2,
+                message: "minimum length is 2 characters",
+              },
+            })}
+            className="resize-none outline-0 w-162.75 h-20"
+            placeholder="დაწერე კომენტარი"
+          ></textarea>
+
+          <button
+            className="cursor-pointer ml-auto mt-3 w-40 px-5 py-2 bg-violet-600 rounded-[20px] text-white
+text-base
+font-normal"
+            type="submit"
+          >
+            დააკომენტარე
+          </button>
+        </form>
+
+        <Comments comments={comments} />
       </section>
     </main>
   );

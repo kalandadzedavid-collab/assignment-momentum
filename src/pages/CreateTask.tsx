@@ -42,7 +42,7 @@ const CreateTask = () => {
   });
 
   const onSubmit: SubmitHandler<submitTask> = (data) => {
-    console.log(data);
+    
 
     // Convert string ids from form to numbers
     const selectedPriorityId = Number(data.priority);
@@ -122,11 +122,7 @@ const CreateTask = () => {
   const [selectedPrior, setSelectcedPrior] = useState<number | null>(null);
   const [selectedDepart, setSelectedDepart] = useState<number | null>(null);
 
-  // console.log(priorities);
-  console.log(statuses);
-  // console.log(departments);
-  // console.log(employees);
-  // console.log(selectedDepart);
+  
 
   const filterWorkers = useMemo(() => {
     if (!employees) return [];
@@ -136,7 +132,7 @@ const CreateTask = () => {
     });
   }, [selectedDepart, employees]);
 
-  console.log("filtered", filterWorkers);
+
 
   return (
     <main className="mt-10 px-10">
