@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getData } from "../services/appApi";
 import type { departments, priorities, employees } from "../types/types";
 import type { UseFormRegister, UseFormHandleSubmit } from "react-hook-form";
+import { motion, AnimatePresence } from "framer-motion";
 
 type FormFields = {
   departFilt: string[];
@@ -43,172 +44,232 @@ const FilterSection = ({
     queryFn: () => getData("employees"),
   });
 
+  const toggleFilter = (id: number) => {
+    setShowFilts(showFilts === id ? null : id);
+  };
 
+  const popoverAnimation = {
+    initial: { opacity: 0, y: 4, scale: 0.98 },
+    animate: { opacity: 1, y: 0, scale: 1 },
+    exit: { opacity: 0, y: 4, scale: 0.98 },
+    transition: { duration: 0.15, ease: "easeOut" }
+  } as const;
 
   return (
-    <section className="relative mb-19.75 px-1 md:px-3 py-3 inline-flex gap-5 md:gap-11 rounded-[10px] outline outline-zinc-200">
-      <div>
+    // Grid layout on mobile gives clean blocks, while md flex inline-restores the original layout bar
+    <section className="grid grid-cols-1 md:flex md:inline-flex items-stretch md:items-center gap-2 md:gap-4 w-full md:w-auto mb-12 p-2 md:p-1.5 md:px-4 bg-white border border-neutral-200 rounded-2xl shadow-sm">
+      
+      {/* 1. DEPARTMENT FILTER */}
+      <div className="relative">
         <button
-          onClick={() => {
-            if (showFilts == 1) {
-              setShowFilts(null);
-            } else {
-              setShowFilts(1);
-            }
-          }}
-          className="cursor-pointer flex gap-2 items-center text-neutral-950
-text-[10px] md:text-base
-font-normal"
+          type="button"
+          onClick={() => toggleFilter(1)}
+          className={`w-full md:w-auto cursor-pointer flex gap-4 items-center justify-between md:justify-start text-xs md:text-sm font-medium px-4 md:px-3 py-3 md:py-2 rounded-xl transition-colors ${
+            showFilts === 1 ? "bg-neutral-100 text-[#8338EC]" : "text-neutral-700 hover:bg-neutral-50"
+          }`}
         >
-          დეპარტამენტი
-          <img src="/icons/dropdown.svg" alt="dropdown" />
+          <span>დეპარტამენტი</span>
+          <motion.svg
+            animate={{ rotate: showFilts === 1 ? 180 : 0 }}
+            transition={{ duration: 0.2 }}
+            className="w-4 h-4 opacity-70 flex-shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2.5}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </motion.svg>
         </button>
 
-        {showFilts == 1 && (
-          <div className="bg-white left-0 top-15 absolute rounded-[10px] px-7.5 py-5 outline-[0.50px] outline-violet-600">
-            <form
-              className="min-w-50 flex flex-col gap-3"
-              onSubmit={handleSubmit(handleDepartFilter)}
+        <AnimatePresence>
+          {showFilts === 1 && (
+            <motion.div
+              {...popoverAnimation}
+              // absolute positioning with left-0 right-0 forces it to snap beautifully to the button box on mobile
+              className="bg-white left-0 right-0 md:right-auto md:left-0 top-[calc(100%+6px)] absolute rounded-2xl p-4 border border-neutral-100 shadow-xl z-50 md:min-w-[320px]"
             >
-              {departments &&
-                departments.map((depart: departments) => {
-                  return (
+              <form
+                className="flex flex-col gap-2.5"
+                onSubmit={handleSubmit((data) => {
+                  handleDepartFilter(data);
+                  setShowFilts(null);
+                })}
+              >
+                <div className="max-h-60 overflow-y-auto pr-1 flex flex-col gap-1 custom-scrollbar">
+                  {departments?.map((depart: departments) => (
                     <label
-                      className="flex gap-3 items-center"
+                      className="flex gap-3 items-center px-2 py-2 rounded-lg hover:bg-neutral-50 cursor-pointer text-sm text-neutral-700 transition-colors select-none"
                       key={depart.id}
-                      htmlFor={depart.name}
+                      htmlFor={`dept-${depart.id}`}
                     >
                       <input
                         {...register("departFilt")}
                         type="checkbox"
                         value={depart.id}
-                        id={depart.name}
+                        id={`dept-${depart.id}`}
+                        className="w-4 h-4 rounded text-[#8338EC] border-neutral-300 focus:ring-[#8338EC]/20 accent-[#8338EC] cursor-pointer"
                       />
-                      <span>{depart.name}</span>
+                      <span className="truncate">{depart.name}</span>
                     </label>
-                  );
-                })}
-              <button
-                className="cursor-pointer self-end mt-5 px-5 py-2 bg-violet-600 rounded-[20px] text-white
-text-base
-font-normal"
-                type="submit"
-              >
-                არჩევა
-              </button>
-            </form>
-          </div>
-        )}
+                  ))}
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.02, backgroundColor: "#7023db" }}
+                  whileTap={{ scale: 0.98 }}
+                  className="cursor-pointer self-end mt-2 px-5 py-1.5 bg-[#8338EC] rounded-full text-white text-xs font-medium shadow-sm transition-colors"
+                  type="submit"
+                >
+                  არჩევა
+                </motion.button>
+              </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      <div>
+      {/* Hidden Divider on Mobile */}
+      <div className="hidden md:block h-5 w-[1px] bg-neutral-200 self-center" />
+
+      {/* 2. PRIORITY FILTER */}
+      <div className="relative">
         <button
-          onClick={() => {
-            if (showFilts == 2) {
-              setShowFilts(null);
-            } else {
-              setShowFilts(2);
-            }
-          }}
-          className="cursor-pointer flex gap-2 items-center text-neutral-950
-text-[10px] md:text-base
-font-normal"
+          type="button"
+          onClick={() => toggleFilter(2)}
+          className={`w-full md:w-auto cursor-pointer flex gap-4 items-center justify-between md:justify-start text-xs md:text-sm font-medium px-4 md:px-3 py-3 md:py-2 rounded-xl transition-colors ${
+            showFilts === 2 ? "bg-neutral-100 text-[#8338EC]" : "text-neutral-700 hover:bg-neutral-50"
+          }`}
         >
-          პრიორიტეტი
-          <img src="/icons/dropdown.svg" alt="dropdown" />
+          <span>პრიორიტეტი</span>
+          <motion.svg
+            animate={{ rotate: showFilts === 2 ? 180 : 0 }}
+            transition={{ duration: 0.2 }}
+            className="w-4 h-4 opacity-70 flex-shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2.5}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </motion.svg>
         </button>
 
-        {showFilts == 2 && (
-          <div className="bg-white left-50% translate-x-[-25%] top-15 absolute rounded-[10px] px-7.5 py-5 outline-[0.50px] outline-violet-600">
-            <form
-              className="min-w-50 flex flex-col gap-3"
-              onSubmit={handleSubmit(handlePriorityFilter)}
+        <AnimatePresence>
+          {showFilts === 2 && (
+            <motion.div
+              {...popoverAnimation}
+              className="bg-white left-0 right-0 md:right-auto md:left-1/2 md:-translate-x-1/2 top-[calc(100%+6px)] absolute rounded-2xl p-4 border border-neutral-100 shadow-xl z-50 md:min-w-[200px]"
             >
-              {priorities &&
-                priorities.map((priority: priorities) => {
-                  return (
+              <form
+                className="flex flex-col gap-2.5"
+                onSubmit={handleSubmit((data) => {
+                  handlePriorityFilter(data);
+                  setShowFilts(null);
+                })}
+              >
+                <div className="flex flex-col gap-1">
+                  {priorities?.map((priority: priorities) => (
                     <label
-                      className="flex gap-3 items-center"
+                      className="flex gap-3 items-center px-2 py-2 rounded-lg hover:bg-neutral-50 cursor-pointer text-sm text-neutral-700 transition-colors select-none"
                       key={priority.id}
-                      htmlFor={priority.name}
+                      htmlFor={`priority-${priority.id}`}
                     >
                       <input
                         {...register("priorityFilt")}
                         type="checkbox"
                         value={priority.id}
-                        id={priority.name}
+                        id={`priority-${priority.id}`}
+                        className="w-4 h-4 rounded text-[#8338EC] border-neutral-300 focus:ring-[#8338EC]/20 accent-[#8338EC] cursor-pointer"
                       />
                       <span>{priority.name}</span>
                     </label>
-                  );
-                })}
-              <button
-                className="cursor-pointer self-end mt-5 px-5 py-2 bg-violet-600 rounded-[20px] text-white
-text-base
-font-normal"
-                type="submit"
-              >
-                არჩევა
-              </button>
-            </form>
-          </div>
-        )}
+                  ))}
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.02, backgroundColor: "#7023db" }}
+                  whileTap={{ scale: 0.98 }}
+                  className="cursor-pointer self-end mt-2 px-5 py-1.5 bg-[#8338EC] rounded-full text-white text-xs font-medium shadow-sm transition-colors"
+                  type="submit"
+                >
+                  არჩევა
+                </motion.button>
+              </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      <div>
+      {/* Hidden Divider on Mobile */}
+      <div className="hidden md:block h-5 w-[1px] bg-neutral-200 self-center" />
+
+      {/* 3. EMPLOYEE FILTER */}
+      <div className="relative">
         <button
-          onClick={() => {
-            if (showFilts == 3) {
-              setShowFilts(null);
-            } else {
-              setShowFilts(3);
-            }
-          }}
-          className="cursor-pointer flex gap-2 items-center text-neutral-950
-text-[10px] md:text-base
-font-normal"
+          type="button"
+          onClick={() => toggleFilter(3)}
+          className={`w-full md:w-auto cursor-pointer flex gap-4 items-center justify-between md:justify-start text-xs md:text-sm font-medium px-4 md:px-3 py-3 md:py-2 rounded-xl transition-colors ${
+            showFilts === 3 ? "bg-neutral-100 text-[#8338EC]" : "text-neutral-700 hover:bg-neutral-50"
+          }`}
         >
-          თანამშრომელი
-          <img src="/icons/dropdown.svg" alt="dropdown" />
+          <span>თანამშრომელი</span>
+          <motion.svg
+            animate={{ rotate: showFilts === 3 ? 180 : 0 }}
+            transition={{ duration: 0.2 }}
+            className="w-4 h-4 opacity-70 flex-shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2.5}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </motion.svg>
         </button>
 
-        {showFilts == 3 && (
-          <div className="bg-white right-0 top-15 absolute rounded-[10px] px-7.5 py-5 outline-[0.50px] outline-violet-600">
-            <form
-              className="min-w-50 flex flex-col gap-3"
-              onSubmit={handleSubmit(handleEmployeeFilter)}
+        <AnimatePresence>
+          {showFilts === 3 && (
+            <motion.div
+              {...popoverAnimation}
+              className="bg-white left-0 right-0 md:left-auto md:right-0 top-[calc(100%+6px)] absolute rounded-2xl p-4 border border-neutral-100 shadow-xl z-50 md:min-w-[300px]"
             >
-              {employees &&
-                employees.map((employee: employees) => {
-                  return (
+              <form
+                className="flex flex-col gap-2.5"
+                onSubmit={handleSubmit((data) => {
+                  handleEmployeeFilter(data);
+                  setShowFilts(null);
+                })}
+              >
+                <div className="max-h-60 overflow-y-auto pr-1 flex flex-col gap-1 custom-scrollbar">
+                  {employees?.map((employee: employees) => (
                     <label
-                      className="flex gap-3 items-center"
+                      className="flex gap-3 items-center px-2 py-2 rounded-lg hover:bg-neutral-50 cursor-pointer text-sm text-neutral-700 transition-colors select-none"
                       key={employee.id}
-                      htmlFor={employee.name}
+                      htmlFor={`emp-${employee.id}`}
                     >
                       <input
                         {...register("employeeFilt")}
                         type="checkbox"
                         value={employee.id}
-                        id={employee.name}
+                        id={`emp-${employee.id}`}
+                        className="w-4 h-4 rounded text-[#8338EC] border-neutral-300 focus:ring-[#8338EC]/20 accent-[#8338EC] cursor-pointer"
                       />
-                      <span>
+                      <span className="truncate">
                         {employee.name} {employee.surname}
                       </span>
                     </label>
-                  );
-                })}
-              <button
-                className="cursor-pointer self-end mt-5 px-5 py-2 bg-violet-600 rounded-[20px] text-white
-text-base
-font-normal"
-                type="submit"
-              >
-                არჩევა
-              </button>
-            </form>
-          </div>
-        )}
+                  ))}
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.02, backgroundColor: "#7023db" }}
+                  whileTap={{ scale: 0.98 }}
+                  className="cursor-pointer self-end mt-2 px-5 py-1.5 bg-[#8338EC] rounded-full text-white text-xs font-medium shadow-sm transition-colors"
+                  type="submit"
+                >
+                  არჩევა
+                </motion.button>
+              </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </section>
   );

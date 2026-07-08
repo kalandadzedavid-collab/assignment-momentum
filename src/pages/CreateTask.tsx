@@ -1,10 +1,12 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getData, postData } from "../services/appApi";
 import type { priorities, submitTask } from "../types/types";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import type { departments, employees, statuses } from "../types/types";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import axios from "axios";
 
 const CreateTask = () => {
   const { data: priorities } = useQuery({
@@ -32,39 +34,62 @@ const CreateTask = () => {
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
     setError,
-  } = useForm<submitTask>();
+    clearErrors,
+  } = useForm<submitTask>({
+    defaultValues: {
+      status: "1",
+      department: "",
+      employee: "",
+      priority: "",
+    }
+  });
+
+  // Watch values for our custom display selectors
+  const watchDepartment = watch("department");
+  const watchStatus = watch("status");
+
+  // Popover toggle states
+  const [openDropdown, setOpenDropdown] = useState<"dept" | "emp" | "prior" | "status" | null>(null);
+
+  // Active label states
+  const [selectedPriorObj, setSelectedPriorObj] = useState<priorities | null>(null);
+  const [selectedDeptLabel, setSelectedDeptLabel] = useState("");
+  const [selectedEmpLabel, setSelectedEmpLabel] = useState("");
 
   const addTask = useMutation({
-    // Accept a generic payload here (we send an array of task objects)
     mutationFn: (data: unknown) => postData("tasks", data),
   });
 
-  const onSubmit: SubmitHandler<submitTask> = (data) => {
-    
+  // Filter workers based on chosen department
+  const filterWorkers = useMemo(() => {
+    if (!employees || !watchDepartment) return [];
+    return employees.filter((employee: employees) => employee.department_id === Number(watchDepartment));
+  }, [watchDepartment, employees]);
 
-    // Convert string ids from form to numbers
+  // Reset employee field if department changes
+  useEffect(() => {
+    if (watchDepartment) {
+      const currentDeptId = Number(watchDepartment);
+      const matchedDept = departments?.find((d: departments) => d.id === currentDeptId);
+      if (matchedDept) setSelectedDeptLabel(matchedDept.name);
+    }
+  }, [watchDepartment, departments]);
+
+  const onSubmit: SubmitHandler<submitTask> = (data) => {
     const selectedPriorityId = Number(data.priority);
     const selectedStatusId = Number(data.status);
     const selectedDepartmentId = Number(data.department);
     const selectedEmployeeId = Number(data.employee);
 
-    // Use find to get single objects (safer and clearer)
-    const priorityObj = priorities?.find(
-      (p: priorities) => p.id === selectedPriorityId
-    );
-    const statusObj = statuses?.find(
-      (s: statuses) => s.id === selectedStatusId
-    );
-    const departmentObj = departments?.find(
-      (d: departments) => d.id === selectedDepartmentId
-    );
-    const employeeObj = employees?.find(
-      (e: employees) => e.id === selectedEmployeeId
-    );
+    const priorityObj = priorities?.find((p: priorities) => p.id === selectedPriorityId);
+    const statusObj = statuses?.find((s: statuses) => s.id === selectedStatusId);
+    const departmentObj = departments?.find((d: departments) => d.id === selectedDepartmentId);
+    const employeeObj = employees?.find((e: employees) => e.id === selectedEmployeeId);
 
-    // Validate presence of referenced objects before sending
     let hasError = false;
     if (!priorityObj) {
       setError("priority", { type: "manual", message: "აირჩიე პრიორიტეტი" });
@@ -75,10 +100,7 @@ const CreateTask = () => {
       hasError = true;
     }
     if (!departmentObj) {
-      setError("department", {
-        type: "manual",
-        message: "აირჩიე დეპარტამენტი",
-      });
+      setError("department", { type: "manual", message: "აირჩიე დეპარტამენტი" });
       hasError = true;
     }
     if (!employeeObj) {
@@ -86,9 +108,8 @@ const CreateTask = () => {
       hasError = true;
     }
 
-    if (hasError) return; // stop submission if any referenced object is missing
+    if (hasError) return;
 
-    // Build payload for creation: send primitive ids (backend commonly expects *_id fields)
     const payload = {
       name: data.name,
       description: data.description,
@@ -99,19 +120,11 @@ const CreateTask = () => {
       employee_id: selectedEmployeeId,
     };
 
-    console.log("Outgoing payload:", payload);
-
     addTask.mutate(payload, {
-      onSuccess: () => {
-        navigate("/");
-      },
+      onSuccess: () => navigate("/"),
       onError: (err: unknown) => {
-        // Try to show backend validation response if available
-        // Axios errors carry response.data with details
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const anyErr = err as any;
-        if (anyErr?.response?.data) {
-          console.error("Backend validation error:", anyErr.response.data);
+        if (axios.isAxiosError(err) && err.response?.data) {
+          console.error("Backend validation error:", err.response.data);
         } else {
           console.error("Mutation error:", err);
         }
@@ -119,276 +132,342 @@ const CreateTask = () => {
     });
   };
 
-  const [selectedPrior, setSelectcedPrior] = useState<number | null>(null);
-  const [selectedDepart, setSelectedDepart] = useState<number | null>(null);
+  // Reusable animation preset matching your main filters
+  const popoverAnimation = {
+    initial: { opacity: 0, y: 8, scale: 0.97 },
+    animate: { opacity: 1, y: 0, scale: 1 },
+    exit: { opacity: 0, y: 8, scale: 0.97 },
+    transition: { duration: 0.15, ease: "easeOut" }
+  } as const;
 
-  
-
-  const filterWorkers = useMemo(() => {
-    if (!employees) return [];
-
-    return employees.filter((employee: employees) => {
-      return employee.department_id == selectedDepart;
-    });
-  }, [selectedDepart, employees]);
-
-
+  // Close dropdowns on outside click
+  const containerRef = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpenDropdown(null);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
 
   return (
-    <main className="mt-10 px-10">
-      <h1 className="mb-6 text-neutral-800 text-2xl font-semibold">
-        შექმენი ახალი დავალება
-      </h1>
+    <main className="max-w-5xl mx-auto mt-10 px-4 md:px-8 pb-16">
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-8">
+        <button 
+          type="button"
+          onClick={() => navigate(-1)}
+          className="p-2 rounded-lg hover:bg-neutral-100 transition-colors text-neutral-600 cursor-pointer"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <h1 className="text-neutral-900 text-2xl font-bold tracking-tight">
+          ახალი დავალების შექმნა
+        </h1>
+      </div>
 
       <form
+        ref={containerRef}
         onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col bg-[#FCFBFF] px-13.75 py-16.25"
+        className="bg-white border border-neutral-200 rounded-2xl p-6 md:p-10 shadow-sm overflow-visible"
       >
-        <div className="flex flex-col xl:flex-row gap-5 justify-between">
-          <div className="flex flex-col gap-13.75">
-            <label htmlFor="name">
-              <p
-                className="text-neutral-700
-text-base
-font-normal"
-              >
-                სათაური*
-              </p>
+        {/* Hidden inputs to make react-hook-form register functional */}
+        <input type="hidden" {...register("department", { required: "აირჩიე დეპარტამენტი" })} />
+        <input type="hidden" {...register("employee", { required: "თანამშრომლის არჩევა სავალდებულოა" })} />
+        <input type="hidden" {...register("priority", { required: "სავალდებულოა" })} />
+        <input type="hidden" {...register("status")} />
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
+          
+          {/* LEFT COLUMN */}
+          <div className="flex flex-col gap-6">
+            <div>
+              <label htmlFor="name" className="block text-neutral-700 font-medium text-sm mb-2">
+                სათაური <span className="text-red-500">*</span>
+              </label>
               <input
                 {...register("name", {
                   required: "ველის შევსება სავალდებულოა",
-                  minLength: {
-                    value: 2,
-                    message: "მინიმუმ 2 სიმბოლო",
-                  },
-                  maxLength: {
-                    value: 255,
-                    message: "მაქსიმუმ 255 სიმბოლო",
-                  },
+                  minLength: { value: 2, message: "მინიმუმ 2 სიმბოლო" },
+                  maxLength: { value: 255, message: "მაქსიმუმ 255 სიმბოლო" },
                 })}
                 id="name"
-                className="w-full xl:w-137.5 p-3.5 bg-white rounded-[5px] outline outline-zinc-200"
                 type="text"
+                className={`w-full px-4 py-3 bg-neutral-50 border rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:bg-white focus:ring-4 transition-all ${
+                  errors.name ? 'border-red-500 focus:ring-red-100' : 'border-neutral-200 focus:border-[#8338EC] focus:ring-[#8338EC]/10'
+                }`}
+                placeholder="შეიყვანეთ დავალების სათაური"
               />
-              {!errors?.name && (
-                <div>
-                  <p
-                    className={`text-gray-500
-text-[10px]`}
-                  >
-                    მინიმუმ 2 სიმბოლო
-                  </p>
-                  <p
-                    className="text-gray-500
-text-[10px]"
-                  >
-                    მაქსიმუმ 255 სიმბოლო
-                  </p>
-                </div>
+              {errors?.name ? (
+                <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.name.message}</p>
+              ) : (
+                <p className="text-neutral-400 text-[11px] mt-1">მინიმუმ 2 და მაქსიმუმ 255 სიმბოლო</p>
               )}
-              <p className="text-red-600">{errors?.name?.message}</p>
-            </label>
+            </div>
 
-            <label htmlFor="description">
-              <p
-                className="text-neutral-700
-text-base
-font-normal"
-              >
-                აღწერა
-              </p>
+            <div>
+              <label htmlFor="description" className="block text-neutral-700 font-medium text-sm mb-2">
+                აღწერა <span className="text-red-500">*</span>
+              </label>
               <textarea
                 {...register("description", {
                   required: "ველის შევსება სავალდებულოა",
-                  minLength: {
-                    value: 2,
-                    message: "მინიმუმ 2 სიმბოლო",
-                  },
-                  maxLength: {
-                    value: 255,
-                    message: "მაქსიმუმ 255 სიმბოლო",
-                  },
+                  minLength: { value: 2, message: "მინიმუმ 2 სიმბოლო" },
+                  maxLength: { value: 1000, message: "მაქსიმუმ 1000 სიმბოლო" },
                 })}
                 id="description"
-                className="w-full xl:w-137.5 h-32 p-3.5 bg-white rounded-[5px] outline outline-zinc-200"
+                rows={6}
+                className={`w-full px-4 py-3 bg-neutral-50 border rounded-xl text-neutral-800 placeholder-neutral-400 focus:outline-none focus:bg-white focus:ring-4 transition-all resize-none ${
+                  errors.description ? 'border-red-500 focus:ring-red-100' : 'border-neutral-200 focus:border-[#8338EC] focus:ring-[#8338EC]/10'
+                }`}
+                placeholder="აღწერეთ დავალების დეტალები..."
               />
-              {!errors?.description && (
-                <div>
-                  <p
-                    className={`text-gray-500
-text-[10px]`}
-                  >
-                    მინიმუმ 2 სიმბოლო
-                  </p>
-                  <p
-                    className="text-gray-500
-text-[10px]"
-                  >
-                    მაქსიმუმ 255 სიმბოლო
-                  </p>
-                </div>
+              {errors?.description ? (
+                <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.description.message}</p>
+              ) : (
+                <p className="text-neutral-400 text-[11px] mt-1">დაამატეთ მოკლე ან ვრცელი სამუშაო აღწერილობა</p>
               )}
-              <p className="text-red-600">{errors?.description?.message}</p>
-            </label>
-
-            <div className="flex flex-col xl:flex-row gap-10">
-              <label htmlFor="priority">
-                <p
-                  className="text-neutral-700
-text-base
-font-normal"
-                >
-                  პრიორიტეტი
-                </p>
-                <div className="rounded outline outline-zinc-200 px-5 flex gap-2 justify-start items-center bg-white w-64 h-11">
-                  <img
-                    src={
-                      priorities && selectedPrior != null
-                        ? priorities[selectedPrior - 1]?.icon
-                        : undefined
-                    }
-                    alt=""
-                  />
-                  <select
-                    {...register("priority", {
-                      required: "სავალდებულოა",
-                    })}
-                    onChange={(e) => setSelectcedPrior(+e.target.value)}
-                    className="w-full text-[12px] outline-0 md:text-base"
-                    id="priority"
-                  >
-                    <option value="">აირჩიე პრიორიტეტი</option>
-                    {priorities &&
-                      priorities.map((priority: priorities) => {
-                        return (
-                          <option key={priority.id} value={priority.id}>
-                            {" "}
-                            {priority.name}
-                          </option>
-                        );
-                      })}
-                  </select>
-                </div>
-                <p className="text-red-400">{errors?.priority?.message}</p>
-              </label>
-
-              <label htmlFor="status">
-                <p
-                  className="text-neutral-700
-text-base
-font-normal"
-                >
-                  სტატუსი
-                </p>
-                <div className="rounded outline outline-zinc-200 px-5 flex gap-2 justify-start items-center bg-white w-64 h-11">
-                  <select
-                    {...register("status")}
-                    id="status"
-                    className="outline-0 w-full text-[12px] md:text-base"
-                  >
-                    {statuses &&
-                      statuses.map((item: statuses) => {
-                        return (
-                          <option value={item.id} key={item.id}>
-                            {item.name}
-                          </option>
-                        );
-                      })}
-                  </select>
-                </div>
-              </label>
             </div>
           </div>
 
-          <div className="flex flex-col justify-between">
-            <label htmlFor="departments">
-              <p
-                className="text-neutral-700
-text-base
-font-normal"
+          {/* RIGHT COLUMN */}
+          <div className="flex flex-col gap-6 justify-between">
+            
+            {/* DYNAMIC CUSTOM DEPT DROPDOWN */}
+            <div className="relative">
+              <label className="block text-neutral-700 font-medium text-sm mb-2">
+                დეპარტამენტი <span className="text-red-500">*</span>
+              </label>
+              <button
+                type="button"
+                onClick={() => setOpenDropdown(openDropdown === "dept" ? null : "dept")}
+                className={`w-full flex items-center justify-between px-4 py-3 bg-neutral-50 border rounded-xl text-left transition-all cursor-pointer focus:outline-none focus:ring-4 ${
+                  openDropdown === "dept" ? "border-[#8338EC] ring-[#8338EC]/10 bg-white" : "border-neutral-200"
+                } ${errors.department ? "border-red-500 focus:ring-red-100" : ""}`}
               >
-                დეპარტამენტი
-              </p>
+                <span className={selectedDeptLabel ? "text-neutral-800" : "text-neutral-400"}>
+                  {selectedDeptLabel || "აირჩიეთ დეპარტამენტი"}
+                </span>
+                <motion.svg animate={{ rotate: openDropdown === "dept" ? 180 : 0 }} className="w-4 h-4 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </motion.svg>
+              </button>
 
-              <div className="h-13 rounded outline outline-zinc-200 px-5 flex gap-2 justify-start items-center bg-white w-[70%] xl:w-137.5">
-                <select
-                  defaultValue={""}
-                  {...register("department", {
-                    required: "აირჩიე დეპარტამენტი",
-                  })}
-                  onChange={(e) => setSelectedDepart(+e.target.value)}
-                  className="w-full outline-0 text-[9px] md:text-base"
-                  id="departments"
-                >
-                  <option value={""}>აირჩიე დეპარტამენტი</option>
-                  {departments &&
-                    departments.map((depart: departments) => {
-                      return (
-                        <option value={depart.id} key={depart.id}>
-                          {depart.name}
-                        </option>
-                      );
-                    })}
-                </select>
-              </div>
-              <p className="text-red-400">
-                {errors.department && errors?.department?.message}
-              </p>
-            </label>
+              <AnimatePresence>
+                {openDropdown === "dept" && (
+                  <motion.div {...popoverAnimation} className="absolute left-0 right-0 top-[calc(100%+6px)] bg-white border border-neutral-100 shadow-xl rounded-2xl p-2 z-50 max-h-60 overflow-y-auto">
+                    {departments?.map((depart: departments) => (
+                      <button
+                        key={depart.id}
+                        type="button"
+                        onClick={() => {
+                          setValue("department", String(depart.id));
+                          setValue("employee", ""); // safe wipe
+                          setSelectedEmpLabel("");
+                          setSelectedDeptLabel(depart.name);
+                          clearErrors("department");
+                          setOpenDropdown(null);
+                        }}
+                        className="w-full text-left px-4 py-2.5 hover:bg-neutral-50 text-sm text-neutral-700 rounded-xl transition-colors cursor-pointer"
+                      >
+                        {depart.name}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              {errors.department && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.department.message}</p>}
+            </div>
 
-            <label htmlFor="worker" className="my-5 xl:my-[unset]">
-              <p
-                className="text-gray-400
-text-base
-font-normal"
+            {/* DYNAMIC CUSTOM WORKER DROPDOWN */}
+            <div className="relative">
+              <label className="block text-neutral-700 font-medium text-sm mb-2">
+                პასუხისმგებელი თანამშრომელი <span className="text-red-500">*</span>
+              </label>
+              <button
+                type="button"
+                disabled={!watchDepartment}
+                onClick={() => setOpenDropdown(openDropdown === "emp" ? null : "emp")}
+                className={`w-full flex items-center justify-between px-4 py-3 border rounded-xl text-left transition-all ${
+                  !watchDepartment 
+                    ? "bg-neutral-100 border-neutral-200 text-neutral-400 cursor-not-allowed" 
+                    : "bg-neutral-50 border-neutral-200 cursor-pointer focus:outline-none focus:ring-4"
+                } ${openDropdown === "emp" ? "border-[#8338EC] ring-[#8338EC]/10 bg-white" : ""} ${
+                  errors.employee ? "border-red-500 focus:ring-red-100" : ""
+                }`}
               >
-                პასუხისმგებელი თანამშრომელი
-              </p>
+                <span className={selectedEmpLabel ? "text-neutral-800" : "text-neutral-400"}>
+                  {watchDepartment ? (selectedEmpLabel || "აირჩიეთ თანამშრომელი") : "ჯერ აირჩიეთ დეპარტამენტი"}
+                </span>
+                <motion.svg animate={{ rotate: openDropdown === "emp" ? 180 : 0 }} className="w-4 h-4 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </motion.svg>
+              </button>
 
-              <div className="h-13 rounded outline outline-zinc-200 px-5 flex gap-2 justify-start items-center bg-white w-[70%] xl:w-137.5">
-                <select
-                  {...register("employee", {
-                    required: "თანამშრომლის არჩევა სავალდებულოა",
-                  })}
-                  className="w-full outline-0 text-[11px] md:text-base"
-                  id="worker"
+              <AnimatePresence>
+                {openDropdown === "emp" && watchDepartment && (
+                  <motion.div {...popoverAnimation} className="absolute left-0 right-0 top-[calc(100%+6px)] bg-white border border-neutral-100 shadow-xl rounded-2xl p-2 z-50 max-h-60 overflow-y-auto">
+                    {filterWorkers.length === 0 ? (
+                      <p className="text-xs text-neutral-400 p-3 text-center">თანამშრომლები ვერ მოიძებნა</p>
+                    ) : (
+                      filterWorkers.map((worker: employees) => (
+                        <button
+                          key={worker.id}
+                          type="button"
+                          onClick={() => {
+                            setValue("employee", String(worker.id));
+                            setSelectedEmpLabel(`${worker.name} ${worker.surname}`);
+                            clearErrors("employee");
+                            setOpenDropdown(null);
+                          }}
+                          className="w-full text-left px-4 py-2.5 hover:bg-neutral-50 text-sm text-neutral-700 rounded-xl transition-colors cursor-pointer"
+                        >
+                          {worker.name} {worker.surname}
+                        </button>
+                      ))
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              {errors.employee && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.employee.message}</p>}
+            </div>
+
+            {/* PRIORITY & STATUS IN GRID BOX */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              
+              {/* CUSTOM PRIORITY DROPDOWN WITH ICONS */}
+              <div className="relative">
+                <label className="block text-neutral-700 font-medium text-sm mb-2">
+                  პრიორიტეტი <span className="text-red-500">*</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setOpenDropdown(openDropdown === "prior" ? null : "prior")}
+                  className={`w-full flex items-center justify-between px-4 py-3 bg-neutral-50 border rounded-xl text-left transition-all cursor-pointer focus:outline-none focus:ring-4 ${
+                    openDropdown === "prior" ? "border-[#8338EC] ring-[#8338EC]/10 bg-white" : "border-neutral-200"
+                  } ${errors.priority ? "border-red-500 focus:ring-red-100" : ""}`}
                 >
-                  <option value={""}>აირჩიე თანამშრომელი</option>
-                  {filterWorkers &&
-                    filterWorkers.map((worker: employees) => {
-                      return (
-                        <option value={worker.id} key={worker.id}>
-                          {worker.name + " " + worker.surname}
-                        </option>
-                      );
-                    })}
-                </select>
-              </div>
-              <p className="text-red-400">{errors?.employee?.message}</p>
-            </label>
+                  <div className="flex items-center gap-2">
+                    {selectedPriorObj?.icon && (
+                      <img src={selectedPriorObj.icon} alt="" className="w-4 h-4 object-contain" />
+                    )}
+                    <span className={selectedPriorObj ? "text-neutral-800" : "text-neutral-400"}>
+                      {selectedPriorObj?.name || "პრიორიტეტი"}
+                    </span>
+                  </div>
+                  <motion.svg animate={{ rotate: openDropdown === "prior" ? 180 : 0 }} className="w-4 h-4 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </motion.svg>
+                </button>
 
-            <label htmlFor="deadline">
-              <div className="w-[70%] xl:w-79.5 h-13 rounded outline outline-zinc-200 px-5 flex gap-2 justify-start items-center bg-white">
-                <input
-                  {...register("due_date", {
-                    required: "აირჩიე დედლაინი",
-                  })}
-                  className="outline-0"
-                  type="date"
-                  id="deadline"
-                />
+                <AnimatePresence>
+                  {openDropdown === "prior" && (
+                    <motion.div {...popoverAnimation} className="absolute left-0 right-0 top-[calc(100%+6px)] bg-white border border-neutral-100 shadow-xl rounded-2xl p-2 z-50">
+                      {priorities?.map((priority: priorities) => (
+                        <button
+                          key={priority.id}
+                          type="button"
+                          onClick={() => {
+                            setValue("priority", String(priority.id));
+                            setSelectedPriorObj(priority);
+                            clearErrors("priority");
+                            setOpenDropdown(null);
+                          }}
+                          className="w-full flex items-center gap-2.5 text-left px-4 py-2.5 hover:bg-neutral-50 text-sm text-neutral-700 rounded-xl transition-colors cursor-pointer"
+                        >
+                          {priority.icon && <img src={priority.icon} alt="" className="w-4 h-4 object-contain" />}
+                          {priority.name}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                {errors.priority && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.priority.message}</p>}
               </div>
-              <p className="text-red-400">{errors?.due_date?.message}</p>
-            </label>
+
+              {/* CUSTOM STATUS DROPDOWN */}
+              <div className="relative">
+                <label className="block text-neutral-700 font-medium text-sm mb-2">
+                  სტატუსი
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setOpenDropdown(openDropdown === "status" ? null : "status")}
+                  className={`w-full flex items-center justify-between px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-left transition-all cursor-pointer focus:outline-none focus:ring-4 ${
+                    openDropdown === "status" ? "border-[#8338EC] ring-[#8338EC]/10 bg-white" : ""
+                  }`}
+                >
+                  <span className="text-neutral-800">
+                    {statuses?.find((s: statuses) => String(s.id) === watchStatus)?.name || "სტატუსი"}
+                  </span>
+                  <motion.svg animate={{ rotate: openDropdown === "status" ? 180 : 0 }} className="w-4 h-4 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </motion.svg>
+                </button>
+
+                <AnimatePresence>
+                  {openDropdown === "status" && (
+                    <motion.div {...popoverAnimation} className="absolute left-0 right-0 top-[calc(100%+6px)] bg-white border border-neutral-100 shadow-xl rounded-2xl p-2 z-50">
+                      {statuses?.map((item: statuses) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => {
+                            setValue("status", String(item.id));
+                            setOpenDropdown(null);
+                          }}
+                          className="w-full text-left px-4 py-2.5 hover:bg-neutral-50 text-sm text-neutral-700 rounded-xl transition-colors cursor-pointer"
+                        >
+                          {item.name}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+            </div>
+
+            {/* DEADLINE */}
+            <div>
+              <label htmlFor="deadline" className="block text-neutral-700 font-medium text-sm mb-2">
+                დედლაინი <span className="text-red-500">*</span>
+              </label>
+              <input
+                {...register("due_date", { required: "აირჩიე დედლაინი" })}
+                type="date"
+                id="deadline"
+                className={`w-full px-4 py-3 bg-neutral-50 border rounded-xl text-neutral-800 focus:outline-none focus:bg-white focus:ring-4 transition-all ${
+                  errors.due_date ? 'border-red-500 focus:ring-red-100' : 'border-neutral-200 focus:border-[#8338EC] focus:ring-[#8338EC]/10'
+                }`}
+              />
+              {errors.due_date && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.due_date.message}</p>}
+            </div>
+
           </div>
         </div>
 
-        <button
-          className="mt-10 self-end px-5 py-2.5 bg-[#8338EC] text-white"
-          type="submit"
-        >
-          დავალების შექმნა
-        </button>
+        {/* ACTIONS */}
+        <div className="mt-12 pt-6 border-t border-neutral-100 flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+            className="px-6 py-3 border border-neutral-200 rounded-xl text-neutral-700 font-medium hover:bg-neutral-50 active:scale-[0.98] transition-all cursor-pointer text-sm"
+          >
+            გაუქმება
+          </button>
+          <button
+            disabled={addTask.isPending}
+            className="px-6 py-3 bg-[#8338EC] text-white font-medium rounded-xl shadow-sm hover:bg-[#7023db] disabled:bg-neutral-300 disabled:cursor-not-allowed active:scale-[0.98] transition-all cursor-pointer text-sm"
+            type="submit"
+          >
+            {addTask.isPending ? "მიმდინარეობს..." : "დავალების შექმნა"}
+          </button>
+        </div>
       </form>
     </main>
   );
