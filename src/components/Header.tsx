@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion, easeOut } from "framer-motion";
+import LogoutButton from "./LogoutButton";
 
 interface HeaderProps {
   setCoworkerWindow: (v: boolean) => void;
@@ -36,7 +37,7 @@ const Header = ({ setCoworkerWindow }: HeaderProps) => {
       />
 
       {/* Buttons Container */}
-      <div className="flex items-center gap-4 w-full md:w-auto justify-center md:justify-end">
+      <div className="flex flex-col-reverse md:flex-row items-center gap-4 w-full md:w-auto justify-center md:justify-end">
         
         {/* Secondary Button: Create Coworker */}
         <motion.button
@@ -65,6 +66,8 @@ const Header = ({ setCoworkerWindow }: HeaderProps) => {
         >
           + შექმენი ახალი დავალება
         </motion.button>
+          
+          <LogoutButton />
 
       </div>
     </motion.header>

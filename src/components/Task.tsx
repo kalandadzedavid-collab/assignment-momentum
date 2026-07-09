@@ -34,11 +34,11 @@ const Task = ({
   };
 
   return (
-    <Link to={`details/${data.id}`} className="block w-full max-w-[380px] no-underline group">
+    <Link to={`details/${data.id}`} className="block w-full max-w-95 no-underline group">
       <motion.div
         whileHover={{ y: -6, scale: 1.015 }}
         transition={{ type: "spring", stiffness: 400, damping: 25 }}
-        className={`${outline_col} w-full bg-white rounded-2xl outline outline-1.5 shadow-sm group-hover:shadow-md transition-shadow duration-300 flex flex-col justify-between min-h-[225px] overflow-hidden`}
+        className={`${outline_col} w-full bg-white rounded-2xl outline outline-1.5 shadow-sm group-hover:shadow-md transition-shadow duration-300 flex flex-col justify-between h-56.25 overflow-hidden`}
       >
         {/* Main Body Wrap */}
         <div className="p-5 flex-1 flex flex-col justify-between">
@@ -56,7 +56,7 @@ const Task = ({
             <h3 className="mb-2 text-neutral-800 text-base font-semibold tracking-tight leading-snug group-hover:text-[#8338EC] transition-colors duration-200 line-clamp-2">
               {data.name}
             </h3>
-            <p className="text-neutral-500 text-sm font-normal line-clamp-3 leading-relaxed">
+            <p className="max-h-10 text-neutral-500 text-sm font-normal line-clamp-3 leading-relaxed">
               {data.description}
             </p>
           </div>
