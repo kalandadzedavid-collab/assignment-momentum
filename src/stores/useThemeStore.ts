@@ -1,21 +1,21 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-interface ThemeState {
+export interface ThemeState {
   theme: "light" | "dark";
   toggleTheme: () => void;
   initTheme: () => void;
 }
 
 export const useThemeStore = create<ThemeState>()(
-  persist(
+  persist<ThemeState>(
     (set, get) => ({
       // Default to light mode fallback
       theme: "light",
 
       toggleTheme: () => {
         const nextTheme = get().theme === "light" ? "dark" : "light";
-        
+
         // Directly manipulate the DOM root for Tailwind v4
         if (nextTheme === "dark") {
           document.documentElement.classList.add("dark");
@@ -28,10 +28,13 @@ export const useThemeStore = create<ThemeState>()(
 
       initTheme: () => {
         const savedTheme = get().theme;
-        const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        
+        const systemPrefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)"
+        ).matches;
+
         // Determine theme based on saved preference or system settings
-        const activeTheme = savedTheme || (systemPrefersDark ? "dark" : "light");
+        const activeTheme =
+          savedTheme || (systemPrefersDark ? "dark" : "light");
 
         if (activeTheme === "dark") {
           document.documentElement.classList.add("dark");
