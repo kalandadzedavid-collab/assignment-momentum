@@ -165,7 +165,7 @@ const Login = () => {
         >
           {/* Animated Product Showcase Slide */}
           <span className="bg-white/15 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase w-fit border border-white/10 mb-6">
-            ✨ ვერსია 2.0 პრეზენტაცია
+            ✨ ვერსია 2.0
           </span>
 
           <h1 className="text-4xl xl:text-5xl font-extrabold tracking-tight leading-[1.15] mb-6">

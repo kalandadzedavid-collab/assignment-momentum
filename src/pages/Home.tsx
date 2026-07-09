@@ -13,7 +13,6 @@ const Home = () => {
     queryFn: () => getData("tasks"),
   });
 
-
   type FormFields = {
     departFilt: string[];
     priorityFilt: string[];
@@ -41,7 +40,6 @@ const Home = () => {
     setShowFilts(null);
   }
 
-
   const filteredTasks = useMemo(() => {
     return (tasks ?? []).filter((task: postTask) => {
       // 1. Department Filter
@@ -64,22 +62,19 @@ const Home = () => {
             : false
           : true;
 
-      // The task must satisfy ALL THREE active filter conditions
       return matchesDepartment && matchesPriority && matchesEmployee;
     });
-  }, [tasks, departFilt, priorityFilt, employeeFilt]); // Added employeeFilt to dependencies
-
- 
+  }, [tasks, departFilt, priorityFilt, employeeFilt]);
 
   return (
     <main className="mb-10 md:px-15 flex flex-col items-center">
+      {/* Page Title with High-Contrast Text Transition Support */}
       <h1
-        className="mt-10 mb-12.5 text-neutral-800 text-center md:text-start 
-text-2xl
-font-semibold"
+        className="mt-10 mb-12.5 text-neutral-800 dark:text-neutral-100 text-center md:text-start text-2xl font-semibold transition-colors duration-300"
       >
         დავალებების გვერდი
       </h1>
+
       <FilterSection
         handleEmployeeFilter={handleEmployeeFilter}
         handlePriorityFilter={handlePriorityFilter}
@@ -89,6 +84,7 @@ font-semibold"
         register={register}
         handleSubmit={handleSubmit}
       />
+
       <div className="flex flex-col 2xl:flex-row 2xl:flex-wrap 2xl:items-start gap-10 items-center justify-between">
         <section className="flex flex-col gap-7.5">
           <StatusButton status={"დასაწყები"} color={`bg-[#F7BC30]`} />

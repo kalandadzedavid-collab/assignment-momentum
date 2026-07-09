@@ -5,18 +5,23 @@ const LogoutButton = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.clear();
+    localStorage.removeItem("login");
     navigate("/login"); // Redirects to the login page after clearing storage
   };
 
+  // Detect if dark mode is active to apply correct Framer Motion animation colors
+  const isDarkMode = document.documentElement.classList.contains("dark");
+
   return (
     <motion.button
-      whileHover={{ scale: 1.02, backgroundColor: "#FEF2F2" }}
+      whileHover={{ 
+        scale: 1.02, 
+        backgroundColor: isDarkMode ? "rgba(153, 27, 27, 0.2)" : "#FEF2F2" 
+      }}
       whileTap={{ scale: 0.98 }}
       onClick={handleLogout}
-      className="cursor-pointer px-5 py-2 border border-red-200 text-red-500 rounded-xl text-sm font-medium transition-colors hover:text-red-600 hover:border-red-300 focus:outline-none focus:ring-4 focus:ring-red-500/10 flex items-center gap-1.5"
+      className="cursor-pointer px-5 py-2 border border-red-200 dark:border-red-900/30 text-red-500 rounded-xl text-sm font-medium transition-colors hover:text-red-600 dark:hover:text-red-400 hover:border-red-300 dark:hover:border-red-800 focus:outline-none focus:ring-4 focus:ring-red-500/10 dark:focus:ring-red-900/20 flex items-center gap-1.5"
     >
-      {/* Optional: Clean generic logout power icon */}
       <svg
         className="w-4 h-4"
         fill="none"

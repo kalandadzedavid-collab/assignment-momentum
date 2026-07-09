@@ -52,20 +52,21 @@ const FilterSection = ({
     initial: { opacity: 0, y: 4, scale: 0.98 },
     animate: { opacity: 1, y: 0, scale: 1 },
     exit: { opacity: 0, y: 4, scale: 0.98 },
-    transition: { duration: 0.15, ease: "easeOut" }
+    transition: { duration: 0.15, ease: "easeOut" },
   } as const;
 
   return (
-    // Grid layout on mobile gives clean blocks, while md flex inline-restores the original layout bar
-    <section className="grid grid-cols-1 md:flex md:inline-flex items-stretch md:items-center gap-2 md:gap-4 w-full md:w-auto mb-12 p-2 md:p-1.5 md:px-4 bg-white border border-neutral-200 rounded-2xl shadow-sm">
-      
+    // Updated container: dynamically shifts from white to modern slate charcoal with matching borders
+    <section className="grid grid-cols-1 md:flex md:inline-flex items-stretch md:items-center gap-2 md:gap-4 w-full md:w-auto mb-12 p-2 md:p-1.5 md:px-4 bg-white dark:bg-[#222533] border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-sm transition-all duration-300">
       {/* 1. DEPARTMENT FILTER */}
       <div className="relative">
         <button
           type="button"
           onClick={() => toggleFilter(1)}
           className={`w-full md:w-auto cursor-pointer flex gap-4 items-center justify-between md:justify-start text-xs md:text-sm font-medium px-4 md:px-3 py-3 md:py-2 rounded-xl transition-colors ${
-            showFilts === 1 ? "bg-neutral-100 text-[#8338EC]" : "text-neutral-700 hover:bg-neutral-50"
+            showFilts === 1
+              ? "bg-neutral-100 dark:bg-neutral-800 text-[#8338EC] dark:text-purple-400"
+              : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
           }`}
         >
           <span>დეპარტამენტი</span>
@@ -78,7 +79,11 @@ const FilterSection = ({
             stroke="currentColor"
             strokeWidth={2.5}
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M19 9l-7 7-7-7"
+            />
           </motion.svg>
         </button>
 
@@ -86,8 +91,7 @@ const FilterSection = ({
           {showFilts === 1 && (
             <motion.div
               {...popoverAnimation}
-              // absolute positioning with left-0 right-0 forces it to snap beautifully to the button box on mobile
-              className="bg-white left-0 right-0 md:right-auto md:left-0 top-[calc(100%+6px)] absolute rounded-2xl p-4 border border-neutral-100 shadow-xl z-50 md:min-w-[320px]"
+              className="bg-white dark:bg-[#2A2D3E] left-0 right-0 md:right-auto md:left-0 top-[calc(100%+6px)] absolute rounded-2xl p-4 border border-neutral-100 dark:border-neutral-800 shadow-xl z-50 md:min-w-[320px] transition-colors duration-300"
             >
               <form
                 className="flex flex-col gap-2.5"
@@ -99,7 +103,7 @@ const FilterSection = ({
                 <div className="max-h-60 overflow-y-auto pr-1 flex flex-col gap-1 custom-scrollbar">
                   {departments?.map((depart: departments) => (
                     <label
-                      className="flex gap-3 items-center px-2 py-2 rounded-lg hover:bg-neutral-50 cursor-pointer text-sm text-neutral-700 transition-colors select-none"
+                      className="flex gap-3 items-center px-2 py-2 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800/40 cursor-pointer text-sm text-neutral-700 dark:text-neutral-200 transition-colors select-none"
                       key={depart.id}
                       htmlFor={`dept-${depart.id}`}
                     >
@@ -108,7 +112,7 @@ const FilterSection = ({
                         type="checkbox"
                         value={depart.id}
                         id={`dept-${depart.id}`}
-                        className="w-4 h-4 rounded text-[#8338EC] border-neutral-300 focus:ring-[#8338EC]/20 accent-[#8338EC] cursor-pointer"
+                        className="w-4 h-4 rounded text-[#8338EC] dark:text-purple-500 border-neutral-300 dark:border-neutral-600 dark:bg-[#1E202B] focus:ring-[#8338EC]/20 accent-[#8338EC] cursor-pointer"
                       />
                       <span className="truncate">{depart.name}</span>
                     </label>
@@ -129,7 +133,7 @@ const FilterSection = ({
       </div>
 
       {/* Hidden Divider on Mobile */}
-      <div className="hidden md:block h-5 w-[1px] bg-neutral-200 self-center" />
+      <div className="hidden md:block h-5 w-[1px] bg-neutral-200 dark:bg-neutral-800 self-center transition-colors duration-300" />
 
       {/* 2. PRIORITY FILTER */}
       <div className="relative">
@@ -137,7 +141,9 @@ const FilterSection = ({
           type="button"
           onClick={() => toggleFilter(2)}
           className={`w-full md:w-auto cursor-pointer flex gap-4 items-center justify-between md:justify-start text-xs md:text-sm font-medium px-4 md:px-3 py-3 md:py-2 rounded-xl transition-colors ${
-            showFilts === 2 ? "bg-neutral-100 text-[#8338EC]" : "text-neutral-700 hover:bg-neutral-50"
+            showFilts === 2
+              ? "bg-neutral-100 dark:bg-neutral-800 text-[#8338EC] dark:text-purple-400"
+              : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
           }`}
         >
           <span>პრიორიტეტი</span>
@@ -150,7 +156,11 @@ const FilterSection = ({
             stroke="currentColor"
             strokeWidth={2.5}
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M19 9l-7 7-7-7"
+            />
           </motion.svg>
         </button>
 
@@ -158,7 +168,7 @@ const FilterSection = ({
           {showFilts === 2 && (
             <motion.div
               {...popoverAnimation}
-              className="bg-white left-0 right-0 md:right-auto md:left-1/2 md:-translate-x-1/2 top-[calc(100%+6px)] absolute rounded-2xl p-4 border border-neutral-100 shadow-xl z-50 md:min-w-[200px]"
+              className="bg-white dark:bg-[#2A2D3E] left-0 right-0 md:right-auto md:left-1/2 md:-translate-x-1/2 top-[calc(100%+6px)] absolute rounded-2xl p-4 border border-neutral-100 dark:border-neutral-800 shadow-xl z-50 md:min-w-[200px] transition-colors duration-300"
             >
               <form
                 className="flex flex-col gap-2.5"
@@ -170,7 +180,7 @@ const FilterSection = ({
                 <div className="flex flex-col gap-1">
                   {priorities?.map((priority: priorities) => (
                     <label
-                      className="flex gap-3 items-center px-2 py-2 rounded-lg hover:bg-neutral-50 cursor-pointer text-sm text-neutral-700 transition-colors select-none"
+                      className="flex gap-3 items-center px-2 py-2 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800/40 cursor-pointer text-sm text-neutral-700 dark:text-neutral-200 transition-colors select-none"
                       key={priority.id}
                       htmlFor={`priority-${priority.id}`}
                     >
@@ -179,7 +189,7 @@ const FilterSection = ({
                         type="checkbox"
                         value={priority.id}
                         id={`priority-${priority.id}`}
-                        className="w-4 h-4 rounded text-[#8338EC] border-neutral-300 focus:ring-[#8338EC]/20 accent-[#8338EC] cursor-pointer"
+                        className="w-4 h-4 rounded text-[#8338EC] dark:text-purple-500 border-neutral-300 dark:border-neutral-600 dark:bg-[#1E202B] focus:ring-[#8338EC]/20 accent-[#8338EC] cursor-pointer"
                       />
                       <span>{priority.name}</span>
                     </label>
@@ -200,7 +210,7 @@ const FilterSection = ({
       </div>
 
       {/* Hidden Divider on Mobile */}
-      <div className="hidden md:block h-5 w-[1px] bg-neutral-200 self-center" />
+      <div className="hidden md:block h-5 w-[1px] bg-neutral-200 dark:bg-neutral-800 self-center transition-colors duration-300" />
 
       {/* 3. EMPLOYEE FILTER */}
       <div className="relative">
@@ -208,7 +218,9 @@ const FilterSection = ({
           type="button"
           onClick={() => toggleFilter(3)}
           className={`w-full md:w-auto cursor-pointer flex gap-4 items-center justify-between md:justify-start text-xs md:text-sm font-medium px-4 md:px-3 py-3 md:py-2 rounded-xl transition-colors ${
-            showFilts === 3 ? "bg-neutral-100 text-[#8338EC]" : "text-neutral-700 hover:bg-neutral-50"
+            showFilts === 3
+              ? "bg-neutral-100 dark:bg-neutral-800 text-[#8338EC] dark:text-purple-400"
+              : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
           }`}
         >
           <span>თანამშრომელი</span>
@@ -221,7 +233,11 @@ const FilterSection = ({
             stroke="currentColor"
             strokeWidth={2.5}
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M19 9l-7 7-7-7"
+            />
           </motion.svg>
         </button>
 
@@ -229,7 +245,7 @@ const FilterSection = ({
           {showFilts === 3 && (
             <motion.div
               {...popoverAnimation}
-              className="bg-white left-0 right-0 md:left-auto md:right-0 top-[calc(100%+6px)] absolute rounded-2xl p-4 border border-neutral-100 shadow-xl z-50 md:min-w-[300px]"
+              className="bg-white dark:bg-[#2A2D3E] left-0 right-0 md:left-auto md:right-0 top-[calc(100%+6px)] absolute rounded-2xl p-4 border border-neutral-100 dark:border-neutral-800 shadow-xl z-50 md:min-w-[300px] transition-colors duration-300"
             >
               <form
                 className="flex flex-col gap-2.5"
@@ -241,7 +257,7 @@ const FilterSection = ({
                 <div className="max-h-60 overflow-y-auto pr-1 flex flex-col gap-1 custom-scrollbar">
                   {employees?.map((employee: employees) => (
                     <label
-                      className="flex gap-3 items-center px-2 py-2 rounded-lg hover:bg-neutral-50 cursor-pointer text-sm text-neutral-700 transition-colors select-none"
+                      className="flex gap-3 items-center px-2 py-2 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800/40 cursor-pointer text-sm text-neutral-700 dark:text-neutral-200 transition-colors select-none"
                       key={employee.id}
                       htmlFor={`emp-${employee.id}`}
                     >
@@ -250,7 +266,7 @@ const FilterSection = ({
                         type="checkbox"
                         value={employee.id}
                         id={`emp-${employee.id}`}
-                        className="w-4 h-4 rounded text-[#8338EC] border-neutral-300 focus:ring-[#8338EC]/20 accent-[#8338EC] cursor-pointer"
+                        className="w-4 h-4 rounded text-[#8338EC] dark:text-purple-500 border-neutral-300 dark:border-neutral-600 dark:bg-[#1E202B] focus:ring-[#8338EC]/20 accent-[#8338EC] cursor-pointer"
                       />
                       <span className="truncate">
                         {employee.name} {employee.surname}
