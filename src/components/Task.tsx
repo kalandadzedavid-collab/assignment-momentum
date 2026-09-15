@@ -48,7 +48,7 @@ const Task = ({
         className={`${outline_col} w-full bg-white dark:bg-[#2A2D3E] rounded-2xl outline outline-1.5 shadow-sm group-hover:shadow-md transition-all duration-300 flex flex-col justify-between h-56.25 overflow-hidden`}
       >
         {/* Main Body Wrap */}
-        <div className="p-5 flex-1 flex flex-col justify-between">
+        <div className="px-5 pt-5 flex-1 flex flex-col justify-start ">
           {/* Top Badges & Date Section */}
           <div className="flex items-center gap-2 flex-wrap">
             {data.priority && <DiffButton priority={data.priority} />}
@@ -63,7 +63,7 @@ const Task = ({
             <h3 className="mb-2 text-neutral-800 dark:text-neutral-100 text-base font-semibold tracking-tight leading-snug group-hover:text-[#8338EC] dark:group-hover:text-purple-400 transition-colors duration-200 line-clamp-2">
               {data.name}
             </h3>
-            <p className="max-h-10 text-neutral-500 dark:text-neutral-400 text-sm font-normal line-clamp-3 leading-relaxed transition-colors duration-300">
+            <p className="max-h-11 text-neutral-500 dark:text-neutral-400 text-sm font-normal line-clamp-3 leading-relaxed transition-colors duration-300">
               {data.description}
             </p>
           </div>
